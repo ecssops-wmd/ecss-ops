@@ -565,39 +565,13 @@
   }
 
   async function loadTransferSuggestions() {
-    const { data, error } = await supabase.rpc('search_parts_for_usage', {
-      search_text: '',
-      van_location_name: VAN_NAME,
-      warehouse_location_name: WAREHOUSE_NAME
+    const { data, error } = await supabase.rpc('get_transfer_suggestions', {
+      van_location_name: VAN_NAME
     });
 
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? data : [];
-
-    uiData = rows.flatMap(r => {
-      const items = [];
-      const vanQty = Number(r.van_qty || 0);
-      const parQty = Number(r.par_qty || 0);
-
-      if (vanQty < parQty) {
-        items.push({
-          ...r,
-          action: 'RESTOCK',
-          suggested_qty: parQty - vanQty
-        });
-      }
-
-      if (vanQty > parQty) {
-        items.push({
-          ...r,
-          action: 'REMOVE',
-          suggested_qty: vanQty - parQty
-        });
-      }
-
-      return items;
-    });
+    uiData = Array.isArray(data) ? data : [];
   }
 
   async function searchParts(){
