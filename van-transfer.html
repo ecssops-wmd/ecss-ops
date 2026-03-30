@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Van Transfer</title>
+
+  <style>
+    :root{
+      --navy:#122644;
+      --blue:#2F6FED;
+      --bg:#f1f3f4;
+      --border:#d7e0ea;
+      --text:#15273F;
+      --muted:#5f7084;
+      --battery:#fff7cc;
+      --red:#D8342A;
+      --soft:#eaf1fb;
+      --warn-bg:#fff4e5;
+      --warn-text:#9a5b00;
+      --warn-border:#f1c27d;
+      --search-accent:#b7a6ef;
+    }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family:Arial,sans-serif;
+      color:var(--text);
+    }
+
+    .header{
+      background:var(--navy);
+      color:white;
+      padding:14px;
+      text-align:center;
+    }
+
+    .title{
+      font-size:26px;
+      font-weight:900;
+    }
+
+    .subtitle{
+      background:#6f42c1;
+      padding:10px;
+      margin-top:8px;
+      border-radius:12px;
+      font-weight:900;
+    }
+
+    .status{
+      font-size:13px;
+      margin-top:6px;
+      color:#d7dfeb;
+      min-height:18px;
+    }
+
+    .container{
+      max-width:760px;
+      margin:auto;
+      padding:14px 14px 110px;
+    }
+
+    .back{
+      display:block;
+      background:white;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+      font-weight:900;
+      margin-bottom:12px;
+      text-decoration:none;
+      color:black;
+    }
+
+    .section{
+      text-align:center;
+      font-weight:900;
+      margin-top:16px;
+      margin-bottom:10px;
+    }
+
+    .helper{
+      text-align:center;
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:12px;
+      line-height:1.35;
+    }
+
+    input,textarea,select{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:16px;
+      background:white;
+      box-sizing:border-box;
+    }
+
+    textarea{
+      min-height:70px;
+      resize:vertical;
+    }
+
+    .search-input{
+      border:2px solid var(--search-accent);
+      box-shadow:0 0 0 3px rgba(111,66,193,0.08);
+    }
+
+    .search-results{
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-top:6px;
+      background:white;
+      display:none;
+      overflow:hidden;
+      max-height:320px;
+      overflow-y:auto;
+    }
+
+    .search-item{
+      padding:10px;
+      border-bottom:1px solid #eee;
+      cursor:pointer;
+    }
+
+    .search-title{
+      font-weight:900;
+    }
+
+    .search-meta{
+      font-size:12px;
+      color:#666;
+      margin-top:4px;
+      line-height:1.35;
+    }
+
+    .card{
+      background:white;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      margin-top:10px;
+    }
+
+    .card.battery{
+      background:var(--battery);
+    }
+
+    .part-title{
+      font-weight:900;
+      font-size:17px;
+      line-height:1.25;
+    }
+
+    .meta{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:3px;
+      line-height:1.35;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      margin-top:6px;
+      margin-right:5px;
+      background:var(--soft);
+    }
+
+    .qty-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-start;
+      margin-top:10px;
+      padding-left:8px;
+    }
+
+    .qty-row button{
+      width:40px;
+      height:40px;
+      font-size:22px;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--blue);
+      color:white;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+    }
+
+    .qty-row input{
+      width:70px;
+      text-align:center;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .warning{
+      margin-top:10px;
+      background:var(--warn-bg);
+      color:var(--warn-text);
+      border:1px solid var(--warn-border);
+      border-radius:10px;
+      padding:10px;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.35;
+    }
+
+    .remove-btn{
+      margin-top:10px;
+      width:100%;
+      background:white;
+      color:var(--red);
+      border:1px solid #efc1bc;
+      border-radius:12px;
+      padding:10px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .submit-bar{
+      position:sticky;
+      bottom:0;
+      background:linear-gradient(to top,var(--bg) 70%,transparent);
+      padding:10px;
+    }
+
+    .submit{
+      width:100%;
+      background:#6f42c1;
+      color:white;
+      border:none;
+      padding:14px;
+      font-size:18px;
+      font-weight:900;
+      border-radius:14px;
+      cursor:pointer;
+    }
+
+    .submit:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <div class="title">ECSS INVENTORY</div>
+    <div class="subtitle" id="pageSubtitle">Van Transfer</div>
+    <div class="status" id="status">Connecting to Supabase…</div>
+  </div>
+
+  <div class="container">
+
+    <a class="back" id="backLink" href="index.html">← Back to Menu</a>
+
+    <div class="section">Transfer To</div>
+    <select id="toTech"></select>
+
+    <div class="helper" id="transferHelper">
+      Only the sending tech should submit this transfer.
+    </div>
+
+    <div class="section">Search Part</div>
+    <input id="searchBox" class="search-input" placeholder="Search part number / description">
+    <div id="results" class="search-results"></div>
+
+    <div id="cards"></div>
+
+    <div class="section">Notes</div>
+    <textarea id="notes"></textarea>
+
+  </div>
+
+  <div class="submit-bar">
+    <button class="submit" id="submitBtn">Transfer Part(s)</button>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const SUPABASE_URL = 'https://ddpswufhwzljjoqsxazh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcHN3dWZod3psampvcXN4YXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzcwMTQsImV4cCI6MjA4OTg1MzAxNH0.I8nzAlkmCNgVQmtDFPFVoUxlmrxFneQQLk8gHh3v2II';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const TECH_CONFIG = {
+      derrick: { technician: 'Derrick', vanName: 'Derrick Van' },
+      joe: { technician: 'Joe', vanName: 'Joe Van' },
+      sarwat: { technician: 'Sarwat', vanName: 'Sarwat Van' },
+      sean: { technician: 'Sean', vanName: 'Sean Van' },
+      vinny: { technician: 'Vinny', vanName: 'Vinny Van' }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const techKey = (params.get('tech') || 'derrick').toLowerCase();
+    const activeTech = TECH_CONFIG[techKey] || TECH_CONFIG.derrick;
+
+    const TECHNICIAN = activeTech.technician;
+    const VAN_NAME = activeTech.vanName;
+    const WAREHOUSE_NAME = 'Warehouse';
+
+    let selected = [];
+    let matches = [];
+    let searchRequestId = 0;
+    let searchDebounceTimer = null;
+    let fromLocationId = null;
+    let techLocations = [];
+
+    function possessiveName(name){
+      const n = String(name || '');
+      return n.endsWith('s') ? `${n}' Van` : `${n}'s Van`;
+    }
+
+    function isBattery(partNumber, description){
+      const blob = `${partNumber || ''} ${description || ''}`.toLowerCase();
+      return blob.includes('battery');
+    }
+
+    function setStatus(t){
+      document.getElementById('status').innerText = t;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function updateSubmitButton(){
+      const btn = document.getElementById('submitBtn');
+      const toTech = document.getElementById('toTech').value;
+      const total = selected.reduce((sum, p) => sum + Number(p.qty || 0), 0);
+
+      if (!total || !toTech) {
+        btn.innerText = 'Transfer Part(s)';
+        return;
+      }
+
+      if (total === 1) {
+        btn.innerText = `Transfer 1 Part to ${possessiveName(toTech)}`;
+      } else {
+        btn.innerText = `Transfer ${total} Parts to ${possessiveName(toTech)}`;
+      }
+    }
+
+    async function loadLocations() {
+      const { data, error } = await supabase
+        .from('locations')
+        .select('id, name')
+        .neq('name', WAREHOUSE_NAME)
+        .order('name');
+
+      if (error) throw error;
+
+      techLocations = data || [];
+      const fromLoc = techLocations.find(x => x.name === VAN_NAME);
+      fromLocationId = fromLoc?.id ?? null;
+
+      if (!fromLocationId) {
+        throw new Error(`Could not find source van: ${VAN_NAME}`);
+      }
+
+      const destinationOptions = techLocations
+        .filter(x => x.name !== VAN_NAME)
+        .map(x => {
+          const techName = x.name.replace(/ Van$/, '');
+          return { techName, vanName: x.name, locationId: x.id };
+        });
+
+      const sel = document.getElementById('toTech');
+      sel.innerHTML =
+        '<option value="">Select destination van</option>' +
+        destinationOptions.map(t => `<option value="${escapeHtml(t.techName)}" data-location-id="${escapeHtml(t.locationId)}">${escapeHtml(possessiveName(t.techName))}</option>`).join('');
+    }
+
+    async function searchParts() {
+      const term = document.getElementById('searchBox').value.trim();
+
+      clearTimeout(searchDebounceTimer);
+
+      if (!term) {
+        matches = [];
+        renderSearchResults();
+        setStatus('Ready to search for part(s)');
+        return;
+      }
+
+      searchDebounceTimer = setTimeout(async () => {
+        const requestId = ++searchRequestId;
+
+        try {
+          setStatus('Searching parts…');
+
+          const { data, error } = await supabase.rpc('search_parts_for_usage', {
+            search_text: term,
+            van_location_name: VAN_NAME,
+            warehouse_location_name: WAREHOUSE_NAME
+          });
+
+          if (requestId !== searchRequestId) return;
+          if (error) throw error;
+
+          matches = Array.isArray(data) ? data : [];
+          renderSearchResults();
+          setStatus(matches.length ? 'Ready to select part(s)' : 'No matching parts found');
+        } catch (error) {
+          if (requestId !== searchRequestId) return;
+          console.error(error);
+          setStatus(`Search failed: ${error.message}`);
+        }
+      }, 200);
+    }
+
+    function renderSearchResults(){
+      const resultsEl = document.getElementById('results');
+
+      if (!matches.length){
+        resultsEl.style.display = 'none';
+        resultsEl.innerHTML = '';
+        return;
+      }
+
+      resultsEl.innerHTML = matches.map((p, i) => `
+        <div class="search-item" data-index="${i}">
+          <div class="search-title">${escapeHtml(p.part_number)}</div>
+          <div>${escapeHtml(p.description || '')}</div>
+          <div class="search-meta">
+            MFG: ${escapeHtml(p.vendor || '-')}<br>
+            Model: ${escapeHtml(p.model || '-')} | AKA: ${escapeHtml(p.aka || '-')}<br>
+            Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)} | Warehouse: ${escapeHtml(p.warehouse_qty)}
+          </div>
+        </div>
+      `).join('');
+
+      resultsEl.style.display = 'block';
+
+      [...resultsEl.querySelectorAll('.search-item')].forEach(el => {
+        el.addEventListener('click', () => {
+          const i = Number(el.dataset.index);
+          selectPart(i);
+        });
+      });
+    }
+
+    function selectPart(i){
+      const p = matches[i];
+      if (!p) return;
+
+      const existingIndex = selected.findIndex(x => x.part_id === p.part_id);
+      if (existingIndex >= 0) {
+        selected[existingIndex].qty += 1;
+      } else {
+        selected.unshift({
+          ...p,
+          qty: 1
+        });
+      }
+
+      document.getElementById('searchBox').value = '';
+      matches = [];
+      renderSearchResults();
+      render();
+    }
+
+    function render(){
+      const cards = document.getElementById('cards');
+
+      cards.innerHTML = selected.map((p, i) => {
+        const warn = Number(p.qty || 0) > Number(p.van_qty || 0);
+
+        return `
+          <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
+            <div class="part-title">
+              ${escapeHtml(isBattery(p.part_number, p.description) ? `⚡ ${p.part_number}` : `${p.part_number} — ${p.description}`)}
+            </div>
+
+            <div class="meta">MFG: ${escapeHtml(p.vendor || '-')}</div>
+            <div class="meta">Model: ${escapeHtml(p.model || '-')}</div>
+            <div class="meta">AKA: ${escapeHtml(p.aka || '-')}</div>
+            <div class="meta">Spec: ${escapeHtml(p.spec || '-')}</div>
+
+            <div class="pill">Van: ${escapeHtml(p.van_qty)}</div>
+            <div class="pill">Par: ${escapeHtml(p.par_qty)}</div>
+            <div class="pill">Warehouse: ${escapeHtml(p.warehouse_qty)}</div>
+
+            <div class="qty-row">
+              <button type="button" data-action="minus" data-index="${i}">−</button>
+              <input value="${escapeHtml(p.qty)}" data-action="input" data-index="${i}">
+              <button type="button" data-action="plus" data-index="${i}">+</button>
+            </div>
+
+            ${warn ? `
+              <div class="warning">
+                Warning: transfer qty exceeds current recorded van quantity.
+                Physical count may be right, but the system shows ${escapeHtml(p.van_qty)}.
+              </div>
+            ` : ''}
+
+            <button class="remove-btn" data-action="remove" data-index="${i}">Remove</button>
+          </div>
+        `;
+      }).join('');
+
+      cards.querySelectorAll('[data-action="minus"]').forEach(btn => {
+        btn.addEventListener('click', () => changeQty(Number(btn.dataset.index), -1));
+      });
+
+      cards.querySelectorAll('[data-action="plus"]').forEach(btn => {
+        btn.addEventListener('click', () => changeQty(Number(btn.dataset.index), 1));
+      });
+
+      cards.querySelectorAll('[data-action="remove"]').forEach(btn => {
+        btn.addEventListener('click', () => removePart(Number(btn.dataset.index)));
+      });
+
+      cards.querySelectorAll('[data-action="input"]').forEach(input => {
+        input.addEventListener('change', () => setQty(Number(input.dataset.index), input.value));
+      });
+
+      updateSubmitButton();
+    }
+
+    function changeQty(i, d){
+      selected[i].qty = Math.max(1, Number(selected[i].qty || 1) + d);
+      render();
+    }
+
+    function setQty(i, v){
+      selected[i].qty = Math.max(1, parseInt(v) || 1);
+      render();
+    }
+
+    function removePart(i){
+      selected.splice(i, 1);
+      render();
+    }
+
+    async function submitTransfer(){
+      const toTech = document.getElementById('toTech').value;
+      const selectedOption = document.querySelector('#toTech option:checked');
+      const toLocationId = selectedOption?.dataset?.locationId || null;
+
+      if (!toTech || !toLocationId){
+        alert('Select a destination van.');
+        return;
+      }
+
+      if (!selected.length){
+        alert('No parts selected.');
+        return;
+      }
+
+      if (!confirm(`Confirm van transfer from ${possessiveName(TECHNICIAN)} to ${possessiveName(toTech)}?`)) return;
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = 'Submitting...';
+
+      try {
+        const { data: txnRows, error: txnError } = await supabase
+          .from('transactions')
+          .insert({
+            transaction_type: 'transfer',
+            from_location_id: fromLocationId,
+            to_location_id: toLocationId,
+            technician_name: TECHNICIAN,
+            notes: document.getElementById('notes').value.trim() || null,
+            created_by: TECHNICIAN
+          })
+          .select('id')
+          .limit(1);
+
+        if (txnError) throw txnError;
+
+        const transactionId = txnRows?.[0]?.id;
+        if (!transactionId) {
+          throw new Error('Transfer transaction was created but no ID was returned.');
+        }
+
+        const lineItems = selected.map(p => ({
+          transaction_id: transactionId,
+          part_id: p.part_id,
+          quantity: Number(p.qty)
+        }));
+
+        const { error: itemError } = await supabase
+          .from('transaction_items')
+          .insert(lineItems);
+
+        if (itemError) throw itemError;
+
+        alert(`Submitted: ${selected.length} transfer line(s)`);
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+        alert(`Error: ${error.message || error}`);
+        btn.disabled = false;
+        updateSubmitButton();
+      }
+    }
+
+    async function init(){
+      document.title = `Van Transfer - ${TECHNICIAN}`;
+      document.getElementById('pageSubtitle').innerText = `${TECHNICIAN} — Van Transfer`;
+      document.getElementById('backLink').href = `index.html?tech=${encodeURIComponent(techKey)}`;
+      document.getElementById('transferHelper').innerHTML =
+        `Only the sending tech should submit this transfer.<br>From Van: ${escapeHtml(possessiveName(TECHNICIAN))}`;
+
+      try {
+        setStatus('Connecting to Supabase…');
+        await loadLocations();
+        setStatus('Ready to search for part(s)');
+      } catch (error) {
+        console.error(error);
+        setStatus(`Startup failed: ${error.message}`);
+      }
+
+      document.getElementById('searchBox').addEventListener('input', searchParts);
+      document.getElementById('toTech').addEventListener('change', updateSubmitButton);
+      document.getElementById('submitBtn').addEventListener('click', submitTransfer);
+
+      document.addEventListener('click', function(e){
+        const resultsEl = document.getElementById('results');
+        const searchBox = document.getElementById('searchBox');
+
+        if (!resultsEl.contains(e.target) && e.target !== searchBox){
+          resultsEl.style.display = 'none';
+        }
+      });
+
+      updateSubmitButton();
+    }
+
+    window.onload = init;
+  </script>
+
+</body>
+</html>
