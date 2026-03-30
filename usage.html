@@ -288,12 +288,12 @@
 <body>
   <div class="header">
     <div class="title">ECSS INVENTORY</div>
-    <div class="subtitle">Derrick — Parts Used</div>
+    <div class="subtitle" id="pageSubtitle">Parts Used</div>
     <div class="status" id="statusMessage">Connecting to Supabase…</div>
   </div>
 
   <div class="content">
-    <a class="back" href="index.html">← Back to Menu</a>
+    <a class="back" id="backLink" href="index.html">← Back to Menu</a>
 
     <div class="section">Store / inc # / po #</div>
     <input id="storeRef" type="text">
@@ -322,8 +322,20 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const TECHNICIAN = 'Derrick';
-    const VAN_NAME = 'Derrick Van';
+    const TECH_CONFIG = {
+      derrick: { technician: 'Derrick', vanName: 'Derrick Van' },
+      joe: { technician: 'Joe', vanName: 'Joe Van' },
+      sarwat: { technician: 'Sarwat', vanName: 'Sarwat Van' },
+      sean: { technician: 'Sean', vanName: 'Sean Van' },
+      vinny: { technician: 'Vinny', vanName: 'Vinny Van' }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const techKey = (params.get('tech') || 'derrick').toLowerCase();
+    const activeTech = TECH_CONFIG[techKey] || TECH_CONFIG.derrick;
+
+    const TECHNICIAN = activeTech.technician;
+    const VAN_NAME = activeTech.vanName;
     const WAREHOUSE_NAME = 'Warehouse';
 
     let selectedParts = [];
@@ -511,7 +523,7 @@
       vanLocationId = data?.[0]?.id ?? null;
 
       if (!vanLocationId) {
-        throw new Error('Could not find required van location.');
+        throw new Error(`Could not find required van location: ${VAN_NAME}`);
       }
     }
 
@@ -615,6 +627,10 @@
 
     async function init() {
       try {
+        document.title = `ECSS Parts Used - ${TECHNICIAN}`;
+        document.getElementById('pageSubtitle').innerText = `${TECHNICIAN} — Parts Used`;
+        document.getElementById('backLink').href = `index.html?tech=${encodeURIComponent(techKey)}`;
+
         setStatus('Connecting to Supabase…');
         await loadLocationIds();
         setStatus('Ready to search for part(s)');
