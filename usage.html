@@ -387,7 +387,13 @@
           <div class="search-meta">
             Part Notes: ${escapeHtml(p.notes || '—')}<br>
             Manufacturer: ${escapeHtml(p.vendor || '—')}<br>
-            Warehouse: ${escapeHtml(p.warehouseQty)} | Van: ${escapeHtml(p.vanQty)} | Par: ${escapeHtml(p.parQty)}
+            Category: ${escapeHtml(p.category || '—')}<br>
+            Model: ${escapeHtml(p.model || '—')}<br>
+            AKA: ${escapeHtml(p.aka || '—')}<br>
+            Spec: ${escapeHtml(p.spec || '—')}<br>
+            Application: ${escapeHtml(p.application || '—')}<br>
+            Includes: ${escapeHtml(p.includes || '—')}<br>
+            Warehouse: ${escapeHtml(p.warehouse_qty)} | Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
           </div>
         </div>
       `).join('');
@@ -416,9 +422,15 @@
           description: p.description,
           notes: p.notes,
           vendor: p.vendor,
-          warehouseQty: p.warehouseQty,
-          vanQty: p.vanQty,
-          parQty: p.parQty,
+          category: p.category,
+          model: p.model,
+          aka: p.aka,
+          spec: p.spec,
+          application: p.application,
+          includes: p.includes,
+          warehouseQty: p.warehouse_qty,
+          vanQty: p.van_qty,
+          parQty: p.par_qty,
           qty: 1
         });
       }
@@ -438,6 +450,12 @@
           <div class="part-title">${escapeHtml(getDisplayLabel(p))}</div>
           <div class="meta">Part Notes: ${escapeHtml(p.notes || '—')}</div>
           <div class="meta">Manufacturer: ${escapeHtml(p.vendor || '—')}</div>
+          <div class="meta">Category: ${escapeHtml(p.category || '—')}</div>
+          <div class="meta">Model: ${escapeHtml(p.model || '—')}</div>
+          <div class="meta">AKA: ${escapeHtml(p.aka || '—')}</div>
+          <div class="meta">Spec: ${escapeHtml(p.spec || '—')}</div>
+          <div class="meta">Application: ${escapeHtml(p.application || '—')}</div>
+          <div class="meta">Includes: ${escapeHtml(p.includes || '—')}</div>
           <div class="meta">Location: ${escapeHtml(VAN_NAME)}</div>
 
           <div class="pills">
@@ -509,74 +527,6 @@
       }
     }
 
-    async function searchByAlias(term) {
-      const { data, error } = await supabase
-        .from('part_numbers')
-        .select(`
-          number_value,
-          parts!inner(
-            id,
-            part_number,
-            description,
-            notes,
-            vendor,
-            inventory(
-              quantity_on_hand,
-              par_quantity,
-              location_id,
-              locations(name)
-            )
-          )
-        `)
-        .ilike('number_value', `%${term}%`)
-        .limit(20);
-
-      if (error) throw error;
-      return data || [];
-    }
-
-    async function searchByDescription(term) {
-      const { data, error } = await supabase
-        .from('parts')
-        .select(`
-          id,
-          part_number,
-          description,
-          notes,
-          vendor,
-          inventory(
-            quantity_on_hand,
-            par_quantity,
-            location_id,
-            locations(name)
-          )
-        `)
-        .or(`description.ilike.%${term}%,notes.ilike.%${term}%,aka.ilike.%${term}%,spec.ilike.%${term}%`)
-        .limit(20);
-
-      if (error) throw error;
-      return data || [];
-    }
-
-    function normalizePartRecord(record) {
-      const part = record.parts ? record.parts : record;
-      const inventories = Array.isArray(part.inventory) ? part.inventory : [];
-
-      const vanInventory = inventories.find(x => x.location_id === vanLocationId || x.locations?.name === VAN_NAME);
-      const warehouseInventory = inventories.find(x => x.location_id === warehouseLocationId || x.locations?.name === WAREHOUSE_NAME);
-
-      return {
-        part_id: part.id,
-        part_number: part.part_number,
-        description: part.description || '',
-        notes: part.notes || '',
-        vendor: part.vendor || '',
-        vanQty: vanInventory?.quantity_on_hand ?? 0,
-        parQty: vanInventory?.par_quantity ?? 0,
-        warehouseQty: warehouseInventory?.quantity_on_hand ?? 0
-      };
-    }
-
     async function searchParts() {
       const term = document.getElementById('searchBox').value.trim();
 
@@ -595,30 +545,16 @@
         try {
           setStatus('Searching parts…');
 
-          const [aliasRows, descRows] = await Promise.all([
-            searchByAlias(term),
-            searchByDescription(term)
-          ]);
+          const { data, error } = await supabase.rpc('search_parts_for_usage', {
+            search_text: term,
+            van_location_name: VAN_NAME,
+            warehouse_location_name: WAREHOUSE_NAME
+          });
 
           if (requestId !== searchRequestId) return;
+          if (error) throw error;
 
-          const merged = new Map();
-
-          for (const row of aliasRows) {
-            const normalized = normalizePartRecord(row);
-            if (!merged.has(normalized.part_id)) {
-              merged.set(normalized.part_id, normalized);
-            }
-          }
-
-          for (const row of descRows) {
-            const normalized = normalizePartRecord(row);
-            if (!merged.has(normalized.part_id)) {
-              merged.set(normalized.part_id, normalized);
-            }
-          }
-
-          searchMatches = Array.from(merged.values()).slice(0, 8);
+          searchMatches = Array.isArray(data) ? data : [];
           renderSearchResults();
           setStatus(searchMatches.length ? 'Ready to select part(s)' : 'No matching parts found');
         } catch (error) {
