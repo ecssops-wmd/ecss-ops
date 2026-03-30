@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Van Adjustment</title>
+
+<style>
+:root{
+--navy:#122644;
+--blue:#2F6FED;
+--bg:#f1f3f4;
+--border:#d7e0ea;
+--text:#15273F;
+--muted:#5f7084;
+--battery:#fff7cc;
+--red:#D8342A;
+--soft:#eaf1fb;
+--search-accent:#7fb2ff;
+}
+
+body{
+margin:0;
+background:var(--bg);
+font-family:Arial,sans-serif;
+color:var(--text);
+}
+
+.header{
+background:var(--navy);
+color:white;
+padding:14px;
+text-align:center;
+}
+
+.title{
+font-size:26px;
+font-weight:900;
+}
+
+.subtitle{
+background:var(--blue);
+padding:10px;
+margin-top:8px;
+border-radius:12px;
+font-weight:900;
+}
+
+.status{
+font-size:13px;
+margin-top:6px;
+color:#d7dfeb;
+min-height:18px;
+}
+
+.container{
+max-width:760px;
+margin:auto;
+padding:14px 14px 110px;
+}
+
+.back{
+display:block;
+background:white;
+border:1px solid var(--border);
+border-radius:12px;
+padding:10px;
+text-align:center;
+font-weight:900;
+margin-bottom:12px;
+text-decoration:none;
+color:black;
+}
+
+.section{
+text-align:center;
+font-weight:900;
+margin-top:16px;
+margin-bottom:10px;
+}
+
+input,textarea,select{
+width:100%;
+padding:12px;
+border-radius:10px;
+border:1px solid var(--border);
+font-size:16px;
+background:white;
+box-sizing:border-box;
+}
+
+.search-input{
+border:2px solid var(--search-accent);
+box-shadow:0 0 0 3px rgba(47,111,237,0.08);
+}
+
+.search-results{
+border:1px solid var(--border);
+border-radius:10px;
+margin-top:6px;
+background:white;
+display:none;
+overflow:hidden;
+max-height:320px;
+overflow-y:auto;
+}
+
+.search-item{
+padding:10px;
+border-bottom:1px solid #eee;
+cursor:pointer;
+}
+
+.search-item:last-child{
+border-bottom:none;
+}
+
+.search-title{
+font-weight:900;
+}
+
+.search-meta{
+font-size:12px;
+color:#666;
+margin-top:4px;
+line-height:1.35;
+}
+
+.card{
+background:white;
+border:1px solid var(--border);
+border-radius:14px;
+padding:12px;
+margin-top:10px;
+}
+
+.card.battery{
+background:var(--battery);
+}
+
+.part-title{
+font-weight:900;
+font-size:17px;
+line-height:1.25;
+}
+
+.meta{
+font-size:13px;
+color:var(--muted);
+margin-top:3px;
+line-height:1.35;
+}
+
+.pill{
+display:inline-block;
+padding:5px 10px;
+border-radius:999px;
+font-size:12px;
+font-weight:800;
+margin-top:6px;
+margin-right:5px;
+background:var(--soft);
+}
+
+.adjust{
+margin-top:10px;
+}
+
+.qty-row{
+display:flex;
+gap:10px;
+align-items:center;
+justify-content:flex-start;
+margin-top:10px;
+padding-left:8px;
+}
+
+.qty-row button{
+width:40px;
+height:40px;
+font-size:22px;
+font-weight:900;
+display:flex;
+align-items:center;
+justify-content:center;
+background:var(--blue);
+color:white;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
+
+.qty-row input{
+width:70px;
+text-align:center;
+font-size:18px;
+font-weight:900;
+}
+
+.remove-btn{
+margin-top:10px;
+width:100%;
+background:white;
+color:var(--red);
+border:1px solid #efc1bc;
+border-radius:12px;
+padding:10px;
+font-weight:900;
+cursor:pointer;
+}
+
+.submit-bar{
+position:sticky;
+bottom:0;
+background:linear-gradient(to top,var(--bg) 70%,transparent);
+padding:10px;
+}
+
+.submit{
+width:100%;
+background:var(--blue);
+color:white;
+border:none;
+padding:14px;
+font-size:18px;
+font-weight:900;
+border-radius:14px;
+cursor:pointer;
+}
+
+.submit:disabled{
+opacity:.65;
+cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="title">ECSS INVENTORY</div>
+  <div class="subtitle" id="pageSubtitle">Van Adjustment</div>
+  <div class="status" id="status">Connecting to Supabase…</div>
+</div>
+
+<div class="container">
+
+  <a class="back" id="backLink" href="/index.html">← Back to Menu</a>
+
+  <div class="section">Search Part</div>
+  <input id="searchBox" class="search-input" placeholder="Search part number / description / alt / vendor item id">
+  <div id="results" class="search-results"></div>
+
+  <div id="cards"></div>
+
+  <div class="section">Notes</div>
+  <textarea id="notes"></textarea>
+
+</div>
+
+<div class="submit-bar">
+  <button class="submit" id="submitBtn">Submit Adjustment</button>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const SUPABASE_URL = 'https://ddpswufhwzljjoqsxazh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcHN3dWZod3psampvcXN4YXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzcwMTQsImV4cCI6MjA4OTg1MzAxNH0.I8nzAlkmCNgVQmtDFPFVoUxlmrxFneQQLk8gHh3v2II';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const TECH_CONFIG = {
+  derrick: { technician: 'Derrick', vanName: 'Derrick Van' },
+  joe: { technician: 'Joe', vanName: 'Joe Van' },
+  sarwat: { technician: 'Sarwat', vanName: 'Sarwat Van' },
+  sean: { technician: 'Sean', vanName: 'Sean Van' },
+  vinny: { technician: 'Vinny', vanName: 'Vinny Van' }
+};
+
+const params = new URLSearchParams(window.location.search);
+const techKey = (params.get('tech') || 'derrick').toLowerCase();
+const activeTech = TECH_CONFIG[techKey] || TECH_CONFIG.derrick;
+
+const TECH = activeTech.technician;
+const VAN_NAME = activeTech.vanName;
+const WAREHOUSE_NAME = 'Warehouse';
+
+let selected = [];
+let matches = [];
+let searchTimer = null;
+let activeSearchToken = 0;
+let vanLocationId = null;
+
+function isBattery(k,d){
+  return String(k||'').toLowerCase().includes('battery') &&
+         String(d||'').toLowerCase().includes('battery');
+}
+
+function setStatus(t){
+  document.getElementById('status').innerText = t;
+}
+
+function updateSubmitButton(){
+  const btn = document.getElementById('submitBtn');
+  const count = selected.length;
+
+  if(count <= 0){
+    btn.innerText = 'Submit Adjustment';
+  }else if(count === 1){
+    btn.innerText = 'Submit 1 Part Adjustment';
+  }else{
+    btn.innerText = `Submit ${count} Part Adjustments`;
+  }
+}
+
+function escapeHtml(v){
+  return String(v ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+async function loadVanLocation() {
+  const { data, error } = await supabase
+    .from('locations')
+    .select('id, name')
+    .eq('name', VAN_NAME)
+    .limit(1);
+
+  if (error) throw error;
+
+  vanLocationId = data?.[0]?.id ?? null;
+  if (!vanLocationId) {
+    throw new Error(`Could not find van location: ${VAN_NAME}`);
+  }
+}
+
+function renderSearchResults(){
+  const results = document.getElementById('results');
+
+  if(!matches.length){
+    results.style.display = 'none';
+    results.innerHTML = '';
+    return;
+  }
+
+  results.innerHTML = matches.map((p,i)=>`
+    <div class="search-item" data-index="${i}">
+      <div class="search-title">${escapeHtml(p.part_number)}</div>
+      <div>${escapeHtml(p.description || '')}</div>
+      <div class="search-meta">
+        Manufacturer: ${escapeHtml(p.vendor || '-')}<br>
+        Model: ${escapeHtml(p.model || '-')} | AKA: ${escapeHtml(p.aka || '-')}<br>
+        Spec: ${escapeHtml(p.spec || '-')}<br>
+        Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)} | Warehouse: ${escapeHtml(p.warehouse_qty)}
+      </div>
+    </div>
+  `).join('');
+
+  [...results.querySelectorAll('.search-item')].forEach(el => {
+    el.addEventListener('click', () => select(Number(el.dataset.index)));
+  });
+
+  results.style.display = 'block';
+}
+
+async function searchNow(){
+  const term = document.getElementById('searchBox').value.trim();
+  const results = document.getElementById('results');
+
+  if(term.length < 2){
+    matches = [];
+    results.style.display = 'none';
+    results.innerHTML = '';
+    if(term.length === 0){
+      setStatus('Ready to search for part(s)');
+    }else{
+      setStatus('Type at least 2 characters');
+    }
+    return;
+  }
+
+  const myToken = ++activeSearchToken;
+  setStatus(`Searching shelves for "${term}"...`);
+
+  try {
+    const { data, error } = await supabase.rpc('search_parts_for_usage', {
+      search_text: term,
+      van_location_name: VAN_NAME,
+      warehouse_location_name: WAREHOUSE_NAME
+    });
+
+    if(myToken !== activeSearchToken) return;
+    if(error) throw error;
+
+    matches = Array.isArray(data) ? data.slice(0, 8) : [];
+    renderSearchResults();
+
+    if(matches.length){
+      setStatus(`${matches.length} matching part(s) found`);
+    }else{
+      setStatus(`No matches found for "${term}"`);
+    }
+  } catch (err) {
+    if(myToken !== activeSearchToken) return;
+    console.error(err);
+    matches = [];
+    results.style.display = 'none';
+    results.innerHTML = '';
+    setStatus('Could not reach the parts shelves right now.');
+  }
+}
+
+function queueSearch(){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(searchNow, 250);
+}
+
+function select(i){
+  const p = matches[i];
+  if(!p) return;
+
+  const already = selected.find(x => x.part_id === p.part_id);
+  if(already){
+    setStatus(`${p.part_number} is already selected`);
+    document.getElementById('searchBox').value = '';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('results').innerHTML = '';
+    return;
+  }
+
+  selected.unshift({
+    ...p,
+    oldQty: Number(p.van_qty || 0),
+    newQty: Number(p.van_qty || 0),
+    reason: 'COUNT'
+  });
+
+  document.getElementById('searchBox').value = '';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('results').innerHTML = '';
+  matches = [];
+
+  setStatus(`${p.part_number} added to adjustment list`);
+  render();
+}
+
+function render(){
+  const cards = document.getElementById('cards');
+
+  cards.innerHTML = selected.map((p,i)=>{
+    const diff = Number(p.newQty || 0) - Number(p.oldQty || 0);
+
+    return `
+      <div class="card ${isBattery(p.part_number,p.description) ? 'battery' : ''}">
+        <div class="part-title">
+          ${isBattery(p.part_number,p.description)
+            ? '⚡ ' + escapeHtml(p.part_number)
+            : escapeHtml(p.part_number) + ' — ' + escapeHtml(p.description)}
+        </div>
+
+        <div class="meta">Manufacturer: ${escapeHtml(p.vendor || '-')}</div>
+        <div class="meta">Model: ${escapeHtml(p.model || '-')}</div>
+        <div class="meta">AKA: ${escapeHtml(p.aka || '-')}</div>
+        <div class="meta">Spec: ${escapeHtml(p.spec || '-')}</div>
+
+        <div class="pill">Van: ${escapeHtml(p.oldQty)}</div>
+        <div class="pill">Par: ${escapeHtml(p.par_qty)}</div>
+        <div class="pill">Diff: ${escapeHtml(diff)}</div>
+
+        <div class="adjust">
+          <div class="qty-row">
+            <button type="button" data-action="minus" data-index="${i}">−</button>
+            <input value="${escapeHtml(p.newQty)}" data-action="input" data-index="${i}">
+            <button type="button" data-action="plus" data-index="${i}">+</button>
+          </div>
+
+          <select data-action="reason" data-index="${i}">
+            <option value="COUNT" ${p.reason==='COUNT'?'selected':''}>Cycle Count</option>
+            <option value="DAMAGE" ${p.reason==='DAMAGE'?'selected':''}>Damage</option>
+            <option value="LOSS" ${p.reason==='LOSS'?'selected':''}>Loss</option>
+            <option value="CORRECTION" ${p.reason==='CORRECTION'?'selected':''}>Correction</option>
+          </select>
+        </div>
+
+        <button class="remove-btn" data-action="remove" data-index="${i}">Remove</button>
+      </div>
+    `;
+  }).join('');
+
+  cards.querySelectorAll('[data-action="minus"]').forEach(btn => {
+    btn.addEventListener('click', () => change(Number(btn.dataset.index), -1));
+  });
+
+  cards.querySelectorAll('[data-action="plus"]').forEach(btn => {
+    btn.addEventListener('click', () => change(Number(btn.dataset.index), 1));
+  });
+
+  cards.querySelectorAll('[data-action="input"]').forEach(input => {
+    input.addEventListener('change', () => setQty(Number(input.dataset.index), input.value));
+  });
+
+  cards.querySelectorAll('[data-action="reason"]').forEach(sel => {
+    sel.addEventListener('change', () => setReason(Number(sel.dataset.index), sel.value));
+  });
+
+  cards.querySelectorAll('[data-action="remove"]').forEach(btn => {
+    btn.addEventListener('click', () => removePart(Number(btn.dataset.index)));
+  });
+
+  updateSubmitButton();
+}
+
+function change(i,d){
+  selected[i].newQty = Math.max(0, Number(selected[i].newQty || 0) + d);
+  render();
+}
+
+function setQty(i,v){
+  selected[i].newQty = Math.max(0, parseInt(v,10) || 0);
+  render();
+}
+
+function setReason(i,v){
+  selected[i].reason = v;
+}
+
+function removePart(i){
+  selected.splice(i,1);
+  render();
+}
+
+async function submitAdjustment(){
+  if(!selected.length){
+    alert('No parts selected');
+    return;
+  }
+
+  if(!confirm('Submit van adjustment?')) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerText = 'Submitting...';
+  setStatus('Submitting adjustment...');
+
+  try {
+    const notes = document.getElementById('notes').value.trim() || null;
+
+    const adjustmentRows = selected.map(p => ({
+      location_id: vanLocationId,
+      part_id: p.part_id,
+      technician_name: TECH,
+      old_qty: Number(p.oldQty || 0),
+      new_qty: Number(p.newQty || 0),
+      reason: p.reason,
+      notes,
+      created_by: TECH
+    }));
+
+    const { error: logError } = await supabase
+      .from('inventory_adjustments')
+      .insert(adjustmentRows);
+
+    if (logError) throw logError;
+
+    for (const part of selected) {
+      const { data: invRows, error: readError } = await supabase
+        .from('inventory')
+        .select('id')
+        .eq('part_id', part.part_id)
+        .eq('location_id', vanLocationId)
+        .limit(1);
+
+      if (readError) throw readError;
+      if (!invRows?.length) continue;
+
+      const { error: updateError } = await supabase
+        .from('inventory')
+        .update({
+          quantity_on_hand: Number(part.newQty || 0),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', invRows[0].id);
+
+      if (updateError) throw updateError;
+    }
+
+    alert(`Submitted: ${selected.length} items`);
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+    alert(`Error: ${err.message || err}`);
+    btn.disabled = false;
+    updateSubmitButton();
+    setStatus('Submission failed.');
+  }
+}
+
+async function init(){
+  document.title = `Van Adjustment - ${TECH}`;
+  document.getElementById('pageSubtitle').innerText = `${TECH} — Van Adjustment`;
+  document.getElementById('backLink').href = `/index.html?tech=${encodeURIComponent(techKey)}`;
+
+  try {
+    setStatus('Connecting to Supabase…');
+    await loadVanLocation();
+    setStatus('Ready to search for part(s)');
+  } catch (err) {
+    console.error(err);
+    setStatus(`Startup failed: ${err.message}`);
+  }
+
+  document.getElementById('searchBox').addEventListener('input', queueSearch);
+  document.getElementById('submitBtn').addEventListener('click', submitAdjustment);
+
+  document.addEventListener('click', function(e){
+    const results = document.getElementById('results');
+    const box = document.getElementById('searchBox');
+
+    if(!results.contains(e.target) && e.target !== box){
+      results.style.display = 'none';
+    }
+  });
+
+  updateSubmitButton();
+}
+
+window.onload = init;
+</script>
+
+</body>
+</html>
