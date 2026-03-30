@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <title>ECSS Portal</title>
 
   <style>
     :root{
@@ -136,76 +138,143 @@
       margin-top:20px;
       line-height:1.4;
     }
+
+    .hidden{
+      display:none !important;
+    }
   </style>
 </head>
 
 <body>
 
-<div class="header">
-  <div class="title">ECSS INVENTORY</div>
-  <div class="subtitle">Derrick's Portal</div>
-</div>
+  <div class="header">
+    <div class="title">ECSS INVENTORY</div>
+    <div class="subtitle" id="portalSubtitle">Portal</div>
+  </div>
 
-<div class="container">
+  <div class="container">
 
-  <? if (TECHNICIAN === "Derrick") { ?>
-    <a class="btn manager" href="<?= APP_URL ?>?page=dashboard">
+    <a class="btn manager hidden" id="managerBtn" href="dashboard.html">
       <div class="btn-title">Manager Console</div>
       <div class="btn-sub">Access all technician portals and system controls</div>
     </a>
-  <? } ?>
 
-  <div class="section">Daily Work</div>
+    <div class="section">Daily Work</div>
 
-  <a class="btn used" href="usage.html">
-    <div class="btn-title">Parts Used</div>
-    <div class="btn-sub">Log parts used from <?= TECHNICIAN ?>'s van</div>
-  </a>
-
-  <a class="btn transfer" href="<?= APP_URL ?>?page=transfer_<?= PAGE_KEY ?>">
-    <div class="btn-title">Warehouse Transfer</div>
-    <div class="btn-sub">Move parts between warehouse and <?= TECHNICIAN ?>'s van</div>
-  </a>
-
-  <div class="section">Van Control</div>
-
-  <a class="btn van-transfer" href="<?= APP_URL ?>?page=van_transfer_<?= PAGE_KEY ?>">
-    <div class="btn-title">Van to Van Transfer</div>
-    <div class="btn-sub">Move parts from <?= TECHNICIAN ?>'s van to another tech's van</div>
-  </a>
-
-  <a class="btn van-adjust" href="<?= APP_URL ?>?page=van_adjustment_<?= PAGE_KEY ?>">
-    <div class="btn-title">Van Inventory Adjustment</div>
-    <div class="btn-sub">Correct counts in <?= TECHNICIAN ?>'s van</div>
-  </a>
-
-  <? if (TECHNICIAN === "Derrick" || TECHNICIAN === "Vinny") { ?>
-    <div class="section">Warehouse Control</div>
-
-  <a class="btn delivery" href="<?= APP_URL ?>?page=delivery_intake_<?= PAGE_KEY ?>">
-    <div class="btn-title">Delivery Intake</div>
-    <div class="btn-sub">Receive incoming parts from vendors and suppliers</div>
-  </a>
-
-    <a class="btn warehouse" href="<?= APP_URL ?>?page=warehouse_adjustment_<?= PAGE_KEY ?>">
-      <div class="btn-title">Warehouse Inventory Adjustment</div>
-      <div class="btn-sub">Correct warehouse inventory counts</div>
+    <a class="btn used" id="partsUsedBtn" href="usage.html">
+      <div class="btn-title">Parts Used</div>
+      <div class="btn-sub" id="partsUsedSub">Log parts used from this van</div>
     </a>
-  <? } ?>
 
-  <div class="section">Tools</div>
+    <a class="btn transfer" id="warehouseTransferBtn" href="#">
+      <div class="btn-title">Warehouse Transfer</div>
+      <div class="btn-sub" id="warehouseTransferSub">Move parts between warehouse and this van</div>
+    </a>
 
-  <a class="btn lookup" href="<?= APP_URL ?>?page=lookup_<?= PAGE_KEY ?>">
-    <div class="btn-title">Part Lookup</div>
-    <div class="btn-sub">Quick search tool</div>
-  </a>
+    <div class="section">Van Control</div>
 
-  <div class="hint">
-    Only adjust inventory when counts are incorrect.<br>
-    Transfers should be used for normal movement.
+    <a class="btn van-transfer" id="vanTransferBtn" href="#">
+      <div class="btn-title">Van to Van Transfer</div>
+      <div class="btn-sub" id="vanTransferSub">Move parts from this van to another tech's van</div>
+    </a>
+
+    <a class="btn van-adjust" id="vanAdjustBtn" href="#">
+      <div class="btn-title">Van Inventory Adjustment</div>
+      <div class="btn-sub" id="vanAdjustSub">Correct counts in this van</div>
+    </a>
+
+    <div id="warehouseControlSection" class="hidden">
+      <div class="section">Warehouse Control</div>
+
+      <a class="btn delivery" id="deliveryBtn" href="#">
+        <div class="btn-title">Delivery Intake</div>
+        <div class="btn-sub">Receive incoming parts from vendors and suppliers</div>
+      </a>
+
+      <a class="btn warehouse" id="warehouseAdjustBtn" href="#">
+        <div class="btn-title">Warehouse Inventory Adjustment</div>
+        <div class="btn-sub">Correct warehouse inventory counts</div>
+      </a>
+    </div>
+
+    <div class="section">Tools</div>
+
+    <a class="btn lookup" id="lookupBtn" href="#">
+      <div class="btn-title">Part Lookup</div>
+      <div class="btn-sub">Quick search tool</div>
+    </a>
+
+    <div class="hint">
+      Only adjust inventory when counts are incorrect.<br>
+      Transfers should be used for normal movement.
+    </div>
+
   </div>
 
-</div>
+  <script>
+    const TECH_CONFIG = {
+      derrick: { technician: 'Derrick', vanName: 'Derrick Van' },
+      joe: { technician: 'Joe', vanName: 'Joe Van' },
+      sarwat: { technician: 'Sarwat', vanName: 'Sarwat Van' },
+      sean: { technician: 'Sean', vanName: 'Sean Van' },
+      vinny: { technician: 'Vinny', vanName: 'Vinny Van' }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const techKey = (params.get('tech') || 'derrick').toLowerCase();
+    const activeTech = TECH_CONFIG[techKey] || TECH_CONFIG.derrick;
+
+    const TECHNICIAN = activeTech.technician;
+    const VAN_NAME = activeTech.vanName;
+
+    const isManager = TECHNICIAN === 'Derrick';
+    const hasWarehouseAccess = TECHNICIAN === 'Derrick' || TECHNICIAN === 'Vinny';
+
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = text;
+    }
+
+    function setHref(id, href) {
+      const el = document.getElementById(id);
+      if (el) el.href = href;
+    }
+
+    function show(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+    }
+
+    function initPage() {
+      document.title = `ECSS Portal - ${TECHNICIAN}`;
+      setText('portalSubtitle', `${TECHNICIAN}'s Portal`);
+
+      setText('partsUsedSub', `Log parts used from ${TECHNICIAN}'s van`);
+      setText('warehouseTransferSub', `Move parts between warehouse and ${TECHNICIAN}'s van`);
+      setText('vanTransferSub', `Move parts from ${TECHNICIAN}'s van to another tech's van`);
+      setText('vanAdjustSub', `Correct counts in ${TECHNICIAN}'s van`);
+
+      setHref('partsUsedBtn', `usage.html?tech=${encodeURIComponent(techKey)}`);
+
+      // Placeholder links for upcoming pages
+      setHref('warehouseTransferBtn', `transfer.html?tech=${encodeURIComponent(techKey)}`);
+      setHref('vanTransferBtn', `van-transfer.html?tech=${encodeURIComponent(techKey)}`);
+      setHref('vanAdjustBtn', `van-adjustment.html?tech=${encodeURIComponent(techKey)}`);
+      setHref('deliveryBtn', `delivery-intake.html?tech=${encodeURIComponent(techKey)}`);
+      setHref('warehouseAdjustBtn', `warehouse-adjustment.html?tech=${encodeURIComponent(techKey)}`);
+      setHref('lookupBtn', `lookup.html?tech=${encodeURIComponent(techKey)}`);
+
+      if (isManager) {
+        show('managerBtn');
+      }
+
+      if (hasWarehouseAccess) {
+        show('warehouseControlSection');
+      }
+    }
+
+    initPage();
+  </script>
 
 </body>
 </html>
