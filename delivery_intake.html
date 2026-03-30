@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Delivery Intake</title>
+
+  <style>
+    :root{
+      --navy:#122644;
+      --green:#198754;
+      --bg:#f1f3f4;
+      --card:#ffffff;
+      --border:#d7e0ea;
+      --text:#15273F;
+      --muted:#5f7084;
+      --battery:#fff7cc;
+      --red:#D8342A;
+      --soft:#eaf1fb;
+      --search-accent:#9fd6b3;
+      --manual:#6f42c1;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      width:100%;
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial,sans-serif;
+      -webkit-text-size-adjust:100%;
+    }
+
+    *{ box-sizing:border-box; }
+
+    .header{
+      background:var(--navy);
+      color:white;
+      padding:14px;
+      text-align:center;
+    }
+
+    .title{
+      font-size:26px;
+      font-weight:900;
+    }
+
+    .subtitle{
+      background:var(--green);
+      padding:10px;
+      margin-top:8px;
+      border-radius:12px;
+      font-weight:900;
+    }
+
+    .status{
+      font-size:13px;
+      margin-top:6px;
+      color:#d7dfeb;
+      min-height:18px;
+    }
+
+    .container{
+      max-width:760px;
+      margin:auto;
+      padding:14px 14px 110px;
+    }
+
+    .back{
+      display:block;
+      background:white;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+      font-weight:900;
+      margin-bottom:12px;
+      text-decoration:none;
+      color:black;
+    }
+
+    .section{
+      background:white;
+      border-radius:16px;
+      border:1px solid var(--border);
+      padding:12px;
+      margin-bottom:16px;
+    }
+
+    .section.search{
+      border-top:5px solid var(--green);
+    }
+
+    .section.manual{
+      border-top:5px solid var(--manual);
+    }
+
+    .section-title{
+      font-size:20px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .section-sub{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:10px;
+      line-height:1.35;
+    }
+
+    .field-label{
+      text-align:center;
+      font-weight:900;
+      margin-top:14px;
+      margin-bottom:8px;
+    }
+
+    input,textarea,select{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:16px;
+      background:white;
+    }
+
+    textarea{
+      min-height:84px;
+      resize:vertical;
+    }
+
+    .search-input{
+      border:2px solid var(--search-accent);
+      box-shadow:0 0 0 3px rgba(25,135,84,0.08);
+    }
+
+    .results{
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-top:6px;
+      display:none;
+      background:white;
+      overflow:hidden;
+      max-height:320px;
+      overflow-y:auto;
+    }
+
+    .result{
+      padding:10px;
+      border-bottom:1px solid #edf2f7;
+      cursor:pointer;
+    }
+
+    .result:last-child{border-bottom:none}
+
+    .result-title{
+      font-weight:900;
+      font-size:15px;
+    }
+
+    .result-desc{
+      font-size:14px;
+      margin-top:2px;
+    }
+
+    .result-meta{
+      font-size:12px;
+      color:#666;
+      margin-top:4px;
+      line-height:1.35;
+    }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:10px;
+      background:white;
+    }
+
+    .card.battery{
+      background:var(--battery);
+      border-color:#e7cf63;
+    }
+
+    .card.manual-new{
+      background:#faf7ff;
+      border-color:#d8c9ff;
+    }
+
+    .part-title{
+      font-weight:900;
+      font-size:17px;
+      line-height:1.25;
+      margin-bottom:4px;
+    }
+
+    .meta{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:2px;
+      line-height:1.35;
+    }
+
+    .pills{
+      margin-top:8px;
+      margin-bottom:8px;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      margin-right:5px;
+      margin-top:4px;
+      background:var(--soft);
+    }
+
+    .pill.battery{background:#fff3cd;color:#7a5a00}
+    .pill.manual{background:#efe7ff;color:#5d35b0}
+    .pill.received{background:#e8f5ee;color:#198754}
+
+    .qty{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    .qty-control{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .qty button{
+      width:42px;
+      height:42px;
+      font-size:26px;
+      font-weight:900;
+      line-height:1;
+      background:var(--green);
+      color:white;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .qty input{
+      width:70px;
+      text-align:center;
+      font-size:18px;
+      font-weight:900;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:8px;
+      background:white;
+    }
+
+    .manual-grid{
+      display:grid;
+      gap:10px;
+    }
+
+    .manual-btn{
+      width:100%;
+      background:var(--manual);
+      color:white;
+      border:none;
+      padding:14px;
+      font-size:16px;
+      font-weight:900;
+      border-radius:12px;
+      cursor:pointer;
+      margin-top:8px;
+    }
+
+    .remove-btn{
+      margin-top:10px;
+      width:100%;
+      background:white;
+      color:var(--red);
+      border:1px solid #efc1bc;
+      border-radius:12px;
+      padding:11px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .hint{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.35;
+      margin-top:8px;
+    }
+
+    .submit-bar{
+      position:sticky;
+      bottom:0;
+      background:linear-gradient(to top,var(--bg) 70%,transparent);
+      padding:10px;
+    }
+
+    .submit{
+      width:100%;
+      background:var(--green);
+      color:white;
+      border:none;
+      padding:14px;
+      font-size:18px;
+      font-weight:900;
+      border-radius:14px;
+      cursor:pointer;
+    }
+
+    .submit:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="title">ECSS INVENTORY</div>
+  <div class="subtitle" id="pageSubtitle">Delivery Intake</div>
+  <div class="status" id="statusMessage">Connecting to Supabase…</div>
+</div>
+
+<div class="container">
+
+  <a class="back" id="backLink" href="/index.html">← Back to Menu</a>
+
+  <div class="field-label">Vendor / Supplier</div>
+  <input id="vendor" type="text">
+
+  <div class="field-label">PO / Invoice #</div>
+  <input id="poInvoice" type="text">
+
+  <div class="field-label">Delivery Date</div>
+  <input id="deliveryDate" type="date">
+
+  <div class="section search">
+    <div class="section-title">Search Existing Part</div>
+    <div class="section-sub">Search and add received parts already in the system.</div>
+
+    <input id="searchBox" class="search-input" type="text" placeholder="Search part number / description">
+    <div id="searchResults" class="results"></div>
+  </div>
+
+  <div class="section manual">
+    <div class="section-title">Add New / Unmatched Part</div>
+    <div class="section-sub">If the part is not found, enter just the part number, description, and quantity received.</div>
+
+    <div class="manual-grid">
+      <input id="manualPartNumber" type="text" placeholder="Part Number">
+      <input id="manualDescription" type="text" placeholder="Description">
+      <input id="manualQty" type="number" min="1" value="1" placeholder="Qty Received">
+    </div>
+
+    <button class="manual-btn" type="button" id="addManualBtn">Add New / Unmatched Part</button>
+
+    <div class="hint">
+      This still logs the delivery even if the part is not in the live parts database yet.
+    </div>
+  </div>
+
+  <div class="field-label">Received Parts</div>
+  <div id="selectedList"></div>
+
+  <div class="field-label">Notes</div>
+  <textarea id="notes" placeholder="Optional"></textarea>
+
+</div>
+
+<div class="submit-bar">
+  <button class="submit" id="submitBtn">Submit Delivery Intake</button>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const SUPABASE_URL = 'https://ddpswufhwzljjoqsxazh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcHN3dWZod3psampvcXN4YXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzcwMTQsImV4cCI6MjA4OTg1MzAxNH0.I8nzAlkmCNgVQmtDFPFVoUxlmrxFneQQLk8gHh3v2II';
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const TECH_CONFIG = {
+    derrick: { technician: 'Derrick', vanName: 'Derrick Van' },
+    joe: { technician: 'Joe', vanName: 'Joe Van' },
+    sarwat: { technician: 'Sarwat', vanName: 'Sarwat Van' },
+    sean: { technician: 'Sean', vanName: 'Sean Van' },
+    vinny: { technician: 'Vinny', vanName: 'Vinny Van' }
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const techKey = (params.get('tech') || 'derrick').toLowerCase();
+  const activeTech = TECH_CONFIG[techKey] || TECH_CONFIG.derrick;
+
+  const TECHNICIAN = activeTech.technician;
+  const WAREHOUSE_NAME = 'Warehouse';
+
+  let partData = [];
+  let selectedParts = [];
+  let searchMatches = [];
+  let warehouseLocationId = null;
+  let searchRequestId = 0;
+  let searchDebounceTimer = null;
+
+  function setStatus(text) {
+    document.getElementById('statusMessage').innerText = text;
+  }
+
+  function isBattery(partNumber, desc) {
+    const blob = `${partNumber || ''} ${desc || ''}`.toLowerCase();
+    return blob.includes('battery');
+  }
+
+  function getDisplayLabel(part) {
+    if (isBattery(part.part_number || part.itemKey, part.description)) {
+      return `⚡ ${part.part_number || part.itemKey}`;
+    }
+    return `${part.part_number || part.itemKey} — ${part.description}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function updateSubmitButton() {
+    const btn = document.getElementById('submitBtn');
+    const total = selectedParts.reduce((sum, p) => sum + Number(p.qty || 0), 0);
+
+    if (total <= 0) {
+      btn.innerText = 'Submit Delivery Intake';
+    } else if (total === 1) {
+      btn.innerText = 'Submit 1 Received Part';
+    } else {
+      btn.innerText = `Submit ${total} Received Parts`;
+    }
+  }
+
+  async function loadWarehouseLocation() {
+    const { data, error } = await supabase
+      .from('locations')
+      .select('id, name')
+      .eq('name', WAREHOUSE_NAME)
+      .limit(1);
+
+    if (error) throw error;
+
+    warehouseLocationId = data?.[0]?.id ?? null;
+    if (!warehouseLocationId) {
+      throw new Error('Warehouse location not found.');
+    }
+  }
+
+  async function searchParts() {
+    const term = document.getElementById('searchBox').value.trim();
+    const box = document.getElementById('searchResults');
+
+    clearTimeout(searchDebounceTimer);
+
+    if (!term) {
+      box.style.display = 'none';
+      box.innerHTML = '';
+      return;
+    }
+
+    searchDebounceTimer = setTimeout(async () => {
+      const requestId = ++searchRequestId;
+
+      try {
+        setStatus('Searching parts…');
+
+        const { data, error } = await supabase.rpc('search_parts_for_usage', {
+          search_text: term,
+          van_location_name: 'Derrick Van',
+          warehouse_location_name: WAREHOUSE_NAME
+        });
+
+        if (requestId !== searchRequestId) return;
+        if (error) throw error;
+
+        partData = Array.isArray(data) ? data : [];
+        searchMatches = partData.slice(0, 8);
+
+        if (!searchMatches.length) {
+          box.style.display = 'none';
+          box.innerHTML = '';
+          setStatus('No matching parts found');
+          return;
+        }
+
+        box.innerHTML = searchMatches.map((p, i) => `
+          <div class="result" data-index="${i}">
+            <div class="result-title">${escapeHtml(p.part_number)}</div>
+            <div class="result-desc">${escapeHtml(p.description || '')}</div>
+            <div class="result-meta">
+              Manufacturer: ${escapeHtml(p.vendor || '—')}<br>
+              Model: ${escapeHtml(p.model || '—')} | AKA: ${escapeHtml(p.aka || '—')}<br>
+              Warehouse: ${escapeHtml(p.warehouse_qty || 0)} | Par: ${escapeHtml(p.par_qty || 0)}
+            </div>
+          </div>
+        `).join('');
+
+        box.style.display = 'block';
+
+        [...box.querySelectorAll('.result')].forEach(el => {
+          el.addEventListener('click', () => selectPart(Number(el.dataset.index)));
+        });
+
+        setStatus('Ready to search for part(s)');
+      } catch (error) {
+        if (requestId !== searchRequestId) return;
+        console.error(error);
+        setStatus(`Search failed: ${error.message}`);
+      }
+    }, 200);
+  }
+
+  function selectPart(index) {
+    const p = searchMatches[index];
+    if (!p) return;
+
+    const existingIndex = selectedParts.findIndex(x => x.part_id === p.part_id && !x.isManualNew);
+    if (existingIndex >= 0) {
+      selectedParts[existingIndex].qty += 1;
+    } else {
+      selectedParts.unshift({
+        part_id: p.part_id,
+        itemKey: p.part_number,
+        part_number: p.part_number,
+        description: p.description || '',
+        vendor: p.vendor || '',
+        model: p.model || '',
+        aka: p.aka || '',
+        spec: p.spec || '',
+        warehouseQty: p.warehouse_qty || 0,
+        parQty: p.par_qty || 0,
+        qty: 1,
+        isManualNew: false
+      });
+    }
+
+    document.getElementById('searchBox').value = '';
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('searchResults').innerHTML = '';
+    renderSelectedParts();
+    setStatus('Ready to search for part(s)');
+  }
+
+  function addManualPart() {
+    const partNumber = document.getElementById('manualPartNumber').value.trim();
+    const description = document.getElementById('manualDescription').value.trim();
+    const qty = Math.max(1, Number(document.getElementById('manualQty').value || 1));
+
+    if (!partNumber) {
+      alert('Enter a part number.');
+      return;
+    }
+
+    if (!description) {
+      alert('Enter a description.');
+      return;
+    }
+
+    selectedParts.unshift({
+      part_id: null,
+      itemKey: partNumber,
+      part_number: partNumber,
+      description,
+      vendor: '',
+      model: '',
+      aka: '',
+      spec: '',
+      warehouseQty: '',
+      parQty: '',
+      qty,
+      isManualNew: true
+    });
+
+    document.getElementById('manualPartNumber').value = '';
+    document.getElementById('manualDescription').value = '';
+    document.getElementById('manualQty').value = '1';
+
+    renderSelectedParts();
+    setStatus('Ready to search for part(s)');
+  }
+
+  function renderSelectedParts() {
+    const container = document.getElementById('selectedList');
+
+    container.innerHTML = selectedParts.map((p, i) => `
+      <div class="card ${p.isManualNew ? 'manual-new' : ''} ${isBattery(p.part_number || p.itemKey, p.description) ? 'battery' : ''}">
+        <div class="part-title">${escapeHtml(getDisplayLabel(p))}</div>
+
+        ${p.isManualNew ? `
+          <div class="meta">New / unmatched part entered manually.</div>
+        ` : `
+          <div class="meta">Manufacturer: ${escapeHtml(p.vendor || '—')}</div>
+          <div class="meta">Model: ${escapeHtml(p.model || '—')}</div>
+          <div class="meta">AKA: ${escapeHtml(p.aka || '—')}</div>
+          <div class="meta">Spec: ${escapeHtml(p.spec || '—')}</div>
+        `}
+
+        <div class="pills">
+          ${p.isManualNew ? '<span class="pill manual">NEW / UNMATCHED</span>' : ''}
+          ${!p.isManualNew ? `<span class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</span>` : ''}
+          ${!p.isManualNew ? `<span class="pill">Par: ${escapeHtml(p.parQty)}</span>` : ''}
+          <span class="pill received">RECEIVED</span>
+          ${isBattery(p.part_number || p.itemKey, p.description) ? '<span class="pill battery">⚡ Battery</span>' : ''}
+        </div>
+
+        <div class="qty">
+          <div class="qty-control">
+            <button type="button" data-action="minus" data-index="${i}">−</button>
+            <input id="qty_${i}" value="${escapeHtml(p.qty)}" data-action="input" data-index="${i}">
+            <button type="button" data-action="plus" data-index="${i}">+</button>
+          </div>
+        </div>
+
+        <button class="remove-btn" type="button" data-action="remove" data-index="${i}">Remove Part</button>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('[data-action="minus"]').forEach(btn => {
+      btn.addEventListener('click', () => changeQty(Number(btn.dataset.index), -1));
+    });
+
+    container.querySelectorAll('[data-action="plus"]').forEach(btn => {
+      btn.addEventListener('click', () => changeQty(Number(btn.dataset.index), 1));
+    });
+
+    container.querySelectorAll('[data-action="input"]').forEach(input => {
+      input.addEventListener('change', () => setQty(Number(input.dataset.index), input.value));
+    });
+
+    container.querySelectorAll('[data-action="remove"]').forEach(btn => {
+      btn.addEventListener('click', () => removePart(Number(btn.dataset.index)));
+    });
+
+    updateSubmitButton();
+  }
+
+  function changeQty(index, delta) {
+    selectedParts[index].qty = Math.max(1, Number(selectedParts[index].qty || 1) + delta);
+    renderSelectedParts();
+  }
+
+  function setQty(index, value) {
+    selectedParts[index].qty = Math.max(1, Number(value || 1));
+    renderSelectedParts();
+  }
+
+  function removePart(index) {
+    selectedParts.splice(index, 1);
+    renderSelectedParts();
+  }
+
+  async function submitIntake() {
+    if (!selectedParts.length) {
+      alert('Add at least one received part.');
+      return;
+    }
+
+    const total = selectedParts.reduce((sum, p) => sum + Number(p.qty || 0), 0);
+    const msg = total === 1
+      ? 'Confirm 1 received part for intake?'
+      : `Confirm ${total} received parts for intake?`;
+
+    if (!confirm(msg)) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerText = 'Submitting...';
+
+    try {
+      const vendor = document.getElementById('vendor').value.trim() || null;
+      const poInvoice = document.getElementById('poInvoice').value.trim() || null;
+      const deliveryDate = document.getElementById('deliveryDate').value || null;
+      const notes = document.getElementById('notes').value.trim() || null;
+
+      const matchedParts = selectedParts.filter(p => !p.isManualNew && p.part_id);
+      const manualOnlyParts = selectedParts.filter(p => p.isManualNew || !p.part_id);
+
+      let transactionId = null;
+
+      if (matchedParts.length) {
+        const { data: txnRows, error: txnError } = await supabase
+          .from('transactions')
+          .insert({
+            transaction_type: 'transfer',
+            from_location_id: warehouseLocationId,
+            to_location_id: warehouseLocationId,
+            technician_name: TECHNICIAN,
+            notes,
+            created_by: TECHNICIAN
+          })
+          .select('id')
+          .limit(1);
+
+        if (txnError) throw txnError;
+
+        transactionId = txnRows?.[0]?.id;
+        if (!transactionId) throw new Error('No transaction ID returned for delivery intake.');
+
+        const lineItems = matchedParts.map(p => ({
+          transaction_id: transactionId,
+          part_id: p.part_id,
+          quantity: Number(p.qty)
+        }));
+
+        const { error: itemError } = await supabase
+          .from('transaction_items')
+          .insert(lineItems);
+
+        if (itemError) throw itemError;
+      }
+
+      const deliveryRows = selectedParts.map(p => ({
+        transaction_id: transactionId,
+        part_id: p.part_id || null,
+        part_number: p.part_number || p.itemKey || null,
+        description: p.description || null,
+        quantity: Number(p.qty),
+        vendor,
+        po_invoice: poInvoice,
+        delivery_date: deliveryDate,
+        notes,
+        entered_by: TECHNICIAN,
+        is_manual_new: !!p.isManualNew
+      }));
+
+      const { error: deliveryError } = await supabase
+        .from('delivery_intake_items')
+        .insert(deliveryRows);
+
+      if (deliveryError) throw deliveryError;
+
+      if (matchedParts.length) {
+        for (const part of matchedParts) {
+          const { data: inventoryRows, error: invReadError } = await supabase
+            .from('inventory')
+            .select('id, quantity_on_hand')
+            .eq('part_id', part.part_id)
+            .eq('location_id', warehouseLocationId)
+            .limit(1);
+
+          if (invReadError) throw invReadError;
+
+          const currentQty = Number(inventoryRows?.[0]?.quantity_on_hand || 0);
+
+          if (inventoryRows?.length) {
+            const { error: invUpdateError } = await supabase
+              .from('inventory')
+              .update({
+                quantity_on_hand: currentQty + Number(part.qty),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', inventoryRows[0].id);
+
+            if (invUpdateError) throw invUpdateError;
+          }
+        }
+      }
+
+      alert(`Submitted successfully.\nRows written: ${selectedParts.length}\nMatched inventory parts: ${matchedParts.length}\nManual/unmatched parts: ${manualOnlyParts.length}`);
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      alert(`Submission failed:\n${error.message || error}`);
+      btn.disabled = false;
+      updateSubmitButton();
+    }
+  }
+
+  async function init() {
+    document.title = `Delivery Intake - ${TECHNICIAN}`;
+    document.getElementById('pageSubtitle').innerText = `${TECHNICIAN} — Delivery Intake`;
+    document.getElementById('backLink').href = `/index.html?tech=${encodeURIComponent(techKey)}`;
+    document.getElementById('addManualBtn').addEventListener('click', addManualPart);
+    document.getElementById('submitBtn').addEventListener('click', submitIntake);
+    document.getElementById('searchBox').addEventListener('input', searchParts);
+
+    try {
+      setStatus('Connecting to Supabase…');
+      await loadWarehouseLocation();
+      setStatus('Ready to search for part(s)');
+    } catch (error) {
+      console.error(error);
+      setStatus(`Startup failed: ${error.message}`);
+    }
+
+    document.addEventListener('click', function(event) {
+      const box = document.getElementById('searchResults');
+      const input = document.getElementById('searchBox');
+
+      if (!box.contains(event.target) && event.target !== input) {
+        box.style.display = 'none';
+      }
+    });
+
+    updateSubmitButton();
+  }
+
+  window.onload = init;
+</script>
+
+</body>
+</html>
