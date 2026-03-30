@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <style>
+    :root{
+      --navy:#122644;
+      --blue:#2F6FED;
+      --bg:#f1f3f4;
+      --card:#ffffff;
+      --border:#d7e0ea;
+      --text:#15273F;
+      --muted:#5f7084;
+
+      --manager:#000000;
+      --used:#D8342A;
+      --transfer:#2F6FED;
+      --delivery:#198754;
+      --van-transfer:#6f42c1;
+      --van-adjust:#2F6FED;
+      --lookup:#198754;
+      --warehouse:#b26a00;
+    }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family:Arial,sans-serif;
+      color:var(--text);
+    }
+
+    .header{
+      background:var(--navy);
+      color:white;
+      padding:16px;
+      text-align:center;
+    }
+
+    .title{
+      font-size:26px;
+      font-weight:900;
+    }
+
+    .subtitle{
+      background:var(--blue);
+      margin-top:10px;
+      padding:10px;
+      border-radius:12px;
+      font-weight:900;
+    }
+
+    .container{
+      max-width:700px;
+      margin:auto;
+      padding:16px;
+    }
+
+    .section{
+      font-weight:900;
+      margin-top:18px;
+      margin-bottom:8px;
+      color:var(--text);
+    }
+
+    .btn{
+      display:block;
+      width:100%;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      margin-bottom:10px;
+      text-decoration:none;
+      color:var(--text);
+      font-weight:900;
+      text-align:left;
+      font-size:16px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .btn:hover{
+      background:#f7f9fc;
+    }
+
+    .btn.manager{
+      border-left:8px solid var(--manager);
+    }
+
+    .btn.used{
+      border-left:8px solid var(--used);
+    }
+
+    .btn.transfer{
+      border-left:8px solid var(--transfer);
+    }
+
+    .btn.delivery{
+      border-left:8px solid var(--delivery);
+    }
+
+    .btn.van-transfer{
+      border-left:8px solid var(--van-transfer);
+    }
+
+    .btn.van-adjust{
+      border-left:8px solid var(--van-adjust);
+    }
+
+    .btn.lookup{
+      border-left:8px solid var(--lookup);
+    }
+
+    .btn.warehouse{
+      border-left:8px solid var(--warehouse);
+    }
+
+    .btn-title{
+      font-size:16px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .btn-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+      font-weight:700;
+    }
+
+    .hint{
+      text-align:center;
+      font-size:13px;
+      color:var(--muted);
+      margin-top:20px;
+      line-height:1.4;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="title">ECSS INVENTORY</div>
+  <div class="subtitle">Derrick's Portal</div>
+</div>
+
+<div class="container">
+
+  <? if (TECHNICIAN === "Derrick") { ?>
+    <a class="btn manager" href="<?= APP_URL ?>?page=dashboard">
+      <div class="btn-title">Manager Console</div>
+      <div class="btn-sub">Access all technician portals and system controls</div>
+    </a>
+  <? } ?>
+
+  <div class="section">Daily Work</div>
+
+  <a class="btn used" href="usage.html">
+    <div class="btn-title">Parts Used</div>
+    <div class="btn-sub">Log parts used from <?= TECHNICIAN ?>'s van</div>
+  </a>
+
+  <a class="btn transfer" href="<?= APP_URL ?>?page=transfer_<?= PAGE_KEY ?>">
+    <div class="btn-title">Warehouse Transfer</div>
+    <div class="btn-sub">Move parts between warehouse and <?= TECHNICIAN ?>'s van</div>
+  </a>
+
+  <div class="section">Van Control</div>
+
+  <a class="btn van-transfer" href="<?= APP_URL ?>?page=van_transfer_<?= PAGE_KEY ?>">
+    <div class="btn-title">Van to Van Transfer</div>
+    <div class="btn-sub">Move parts from <?= TECHNICIAN ?>'s van to another tech's van</div>
+  </a>
+
+  <a class="btn van-adjust" href="<?= APP_URL ?>?page=van_adjustment_<?= PAGE_KEY ?>">
+    <div class="btn-title">Van Inventory Adjustment</div>
+    <div class="btn-sub">Correct counts in <?= TECHNICIAN ?>'s van</div>
+  </a>
+
+  <? if (TECHNICIAN === "Derrick" || TECHNICIAN === "Vinny") { ?>
+    <div class="section">Warehouse Control</div>
+
+  <a class="btn delivery" href="<?= APP_URL ?>?page=delivery_intake_<?= PAGE_KEY ?>">
+    <div class="btn-title">Delivery Intake</div>
+    <div class="btn-sub">Receive incoming parts from vendors and suppliers</div>
+  </a>
+
+    <a class="btn warehouse" href="<?= APP_URL ?>?page=warehouse_adjustment_<?= PAGE_KEY ?>">
+      <div class="btn-title">Warehouse Inventory Adjustment</div>
+      <div class="btn-sub">Correct warehouse inventory counts</div>
+    </a>
+  <? } ?>
+
+  <div class="section">Tools</div>
+
+  <a class="btn lookup" href="<?= APP_URL ?>?page=lookup_<?= PAGE_KEY ?>">
+    <div class="btn-title">Part Lookup</div>
+    <div class="btn-sub">Quick search tool</div>
+  </a>
+
+  <div class="hint">
+    Only adjust inventory when counts are incorrect.<br>
+    Transfers should be used for normal movement.
+  </div>
+
+</div>
+
+</body>
+</html>
