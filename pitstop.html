@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ECSS Pit Stop</title>
+
+  <style>
+    :root{
+      --navy:#122644;
+      --blue:#2F6FED;
+      --bg:#f1f3f4;
+      --card:#ffffff;
+      --border:#d7e0ea;
+      --text:#15273F;
+      --muted:#5f7084;
+      --green:#198754;
+      --red:#D8342A;
+      --gold:#d6a700;
+      --soft:#eaf1fb;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial,sans-serif;
+    }
+
+    .header{
+      background:var(--navy);
+      color:#fff;
+      text-align:center;
+      padding:16px;
+    }
+
+    .title{
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:.5px;
+    }
+
+    .subtitle{
+      margin-top:8px;
+      background:var(--blue);
+      border-radius:12px;
+      padding:10px;
+      font-weight:900;
+    }
+
+    .wrap{
+      max-width:860px;
+      margin:0 auto;
+      padding:16px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:14px;
+      box-shadow:0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .row > *{
+      flex:1;
+      min-width:180px;
+    }
+
+    .stat{
+      background:var(--soft);
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:900;
+      text-align:center;
+    }
+
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:4px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+    }
+
+    .big{
+      font-size:22px;
+      font-weight:900;
+    }
+
+    .section-title{
+      font-size:18px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .prompt{
+      font-size:22px;
+      font-weight:900;
+      line-height:1.25;
+      margin-bottom:8px;
+    }
+
+    .helper{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.35;
+    }
+
+    .choices{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .choice-btn, .action-btn{
+      width:100%;
+      border:none;
+      border-radius:12px;
+      padding:14px;
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+      transition:transform .05s ease, opacity .15s ease;
+    }
+
+    .choice-btn{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--border);
+      text-align:left;
+    }
+
+    .choice-btn:hover, .action-btn:hover{
+      opacity:.96;
+    }
+
+    .choice-btn:active, .action-btn:active{
+      transform:scale(.99);
+    }
+
+    .action-btn.primary{
+      background:var(--blue);
+      color:white;
+    }
+
+    .action-btn.success{
+      background:var(--green);
+      color:white;
+    }
+
+    .action-btn.danger{
+      background:var(--red);
+      color:white;
+    }
+
+    .action-btn.gold{
+      background:var(--gold);
+      color:#1f1f1f;
+    }
+
+    .feedback{
+      margin-top:12px;
+      padding:12px;
+      border-radius:12px;
+      font-weight:900;
+      display:none;
+    }
+
+    .feedback.good{
+      background:#eaf8ef;
+      color:#146c43;
+      border:1px solid #b8e3c8;
+    }
+
+    .feedback.bad{
+      background:#fdecec;
+      color:#9b1c1c;
+      border:1px solid #f4bcbc;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--soft);
+      font-size:12px;
+      font-weight:900;
+      margin-right:6px;
+      margin-top:6px;
+    }
+
+    .leaderboard table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+    }
+
+    .leaderboard th,
+    .leaderboard td{
+      border-bottom:1px solid var(--border);
+      padding:10px 8px;
+      text-align:left;
+    }
+
+    .leaderboard th{
+      font-size:12px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.4px;
+    }
+
+    input, select{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:16px;
+      background:#fff;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .footer-note{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-top:8px;
+      line-height:1.35;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">ECSS PIT STOP</div>
+    <div class="subtitle">Fix the machine. Beat the clock. Bank the points.</div>
+  </div>
+
+  <div class="wrap">
+    <div class="card" id="setupCard">
+      <div class="section-title">Start Game</div>
+      <div class="row">
+        <div>
+          <div class="label">Technician</div>
+          <select id="techSelect">
+            <option value="Derrick">Derrick</option>
+            <option value="Joe">Joe</option>
+            <option value="Sarwat">Sarwat</option>
+            <option value="Sean">Sean</option>
+            <option value="Vinny">Vinny</option>
+          </select>
+        </div>
+        <div>
+          <div class="label">Mode</div>
+          <select id="modeSelect">
+            <option value="campaign">Campaign (Levels 1 → 3)</option>
+            <option value="quick">Quick Play</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="action-btn primary" id="startBtn">Start Pit Stop</button>
+      </div>
+      <div class="footer-note">
+        Bonus round includes real battery testing logic:
+        load test one 12V battery or 1–2 6V batteries at a time.
+      </div>
+    </div>
+
+    <div class="card hidden" id="hudCard">
+      <div class="row">
+        <div class="stat">
+          <div class="label">Technician</div>
+          <div class="big" id="hudTech">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Level</div>
+          <div class="big" id="hudLevel">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Round</div>
+          <div class="big" id="hudRound">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Score</div>
+          <div class="big" id="hudScore">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Streak</div>
+          <div class="big" id="hudStreak">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Time</div>
+          <div class="big" id="hudTimer">20</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="gameCard">
+      <div class="section-title" id="scenarioTitle">Machine Incoming</div>
+      <div class="prompt" id="symptomText">—</div>
+      <div class="helper" id="scenarioHelper">Choose the most likely part or component first.</div>
+      <div id="tagWrap"></div>
+      <div class="choices" id="choicesWrap"></div>
+      <div class="feedback" id="feedbackBox"></div>
+    </div>
+
+    <div class="card hidden" id="bonusCard">
+      <div class="section-title">Battery Bonus Round</div>
+      <div class="prompt" id="bonusQuestion">—</div>
+      <div class="helper">Correct answer = bonus points and streak boost.</div>
+      <div class="choices" id="bonusChoices"></div>
+      <div class="feedback" id="bonusFeedback"></div>
+    </div>
+
+    <div class="card hidden" id="gameOverCard">
+      <div class="section-title">Run Complete</div>
+      <div class="prompt" id="gameOverTitle">Nice work.</div>
+      <div class="row">
+        <div class="stat">
+          <div class="label">Final Score</div>
+          <div class="big" id="finalScore">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Best Streak</div>
+          <div class="big" id="finalStreak">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Level Reached</div>
+          <div class="big" id="finalLevel">0</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;" class="row">
+        <div><button class="action-btn success" id="saveScoreBtn">Save Score</button></div>
+        <div><button class="action-btn primary" id="playAgainBtn">Play Again</button></div>
+        <div><button class="action-btn danger" id="resetBoardBtn">Clear Leaderboard</button></div>
+      </div>
+    </div>
+
+    <div class="card leaderboard">
+      <div class="section-title">Leaderboard</div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Tech</th>
+            <th>Score</th>
+            <th>Level</th>
+            <th>Streak</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody">
+          <tr><td colspan="6">No scores yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const LEVELS = {
+      1: {
+        name: 'Handicapped Carts',
+        timePerRound: 20,
+        rounds: [
+          {
+            symptom: 'Cart has no power at all. Charger and outlet are known good. Batteries are weak under load.',
+            tags: ['24V cart', 'basic power'],
+            choices: ['Battery Set', 'Horn', 'Seat Cover', 'Basket'],
+            correct: 'Battery Set'
+          },
+          {
+            symptom: 'Cart powers up but dies when the rider lifts slightly off the seat.',
+            tags: ['seat safety', 'intermittent cutout'],
+            choices: ['Seat Switch', 'Charger', 'Motor Brake', 'Armrest'],
+            correct: 'Seat Switch'
+          },
+          {
+            symptom: 'Cart will not charge even though batteries test decent and AC power is present.',
+            tags: ['charging issue'],
+            choices: ['Charger', 'Headlight Lens', 'Basket Hook', 'Rear Wheel'],
+            correct: 'Charger'
+          },
+          {
+            symptom: 'Drive speed surges and throttle response is erratic from the tiller.',
+            tags: ['input issue'],
+            choices: ['Potentiometer', 'Seat Switch', 'Floor Mat', 'Key'],
+            correct: 'Potentiometer'
+          },
+          {
+            symptom: 'Cart has battery voltage, safety circuit is good, but drive output is dead.',
+            tags: ['control issue'],
+            choices: ['Controller', 'Mirror', 'Cup Holder', 'Battery Strap'],
+            correct: 'Controller'
+          }
+        ]
+      },
+      2: {
+        name: 'Cart Machines',
+        timePerRound: 17,
+        rounds: [
+          {
+            symptom: 'Machine cuts out under load going uphill, but returns once the load is removed.',
+            tags: ['load issue', 'cart machine'],
+            choices: ['Battery Set', 'Horn Button', 'Rear Decal', 'Seat Post'],
+            correct: 'Battery Set'
+          },
+          {
+            symptom: 'Machine has a dead zone in throttle and then suddenly jumps.',
+            tags: ['control input'],
+            choices: ['Throttle Assembly', 'Handle Grip', 'Warning Label', 'Caster Fork'],
+            correct: 'Throttle Assembly'
+          },
+          {
+            symptom: 'Voltage is present but drive output is intermittent and heat-related.',
+            tags: ['electronic fault'],
+            choices: ['Controller', 'Buzzer', 'Basket Mount', 'Painted Panel'],
+            correct: 'Controller'
+          },
+          {
+            symptom: 'Motor tries to engage but current draw is high and torque is poor.',
+            tags: ['drive system'],
+            choices: ['Motor', 'Seat Switch', 'Charge Port Cap', 'Logo Sticker'],
+            correct: 'Motor'
+          },
+          {
+            symptom: 'Machine is electrically inconsistent and different functions drop in and out with movement.',
+            tags: ['wiring issue'],
+            choices: ['Wiring Harness', 'Cup Holder', 'Seat Cover', 'Foot Pad'],
+            correct: 'Wiring Harness'
+          }
+        ]
+      },
+      3: {
+        name: 'Scrubbers',
+        timePerRound: 15,
+        rounds: [
+          {
+            symptom: 'Scrubber runs but is not recovering water from the floor.',
+            tags: ['recovery issue', 'scrubber'],
+            choices: ['Vacuum Motor', 'Brush Deck Skirt', 'Seat Switch', 'Headlight'],
+            correct: 'Vacuum Motor'
+          },
+          {
+            symptom: 'Solution tank has fluid but nothing dispenses to the floor.',
+            tags: ['solution system'],
+            choices: ['Solenoid', 'Horn', 'Key Switch Cover', 'Rear Bumper'],
+            correct: 'Solenoid'
+          },
+          {
+            symptom: 'Machine drives fine but the brush does not spin when commanded.',
+            tags: ['brush system'],
+            choices: ['Brush Motor', 'Basket Latch', 'Throttle Lever', 'Rear Label'],
+            correct: 'Brush Motor'
+          },
+          {
+            symptom: 'Machine leaves dirty water behind even though vacuum sounds normal.',
+            tags: ['pickup system'],
+            choices: ['Squeegee System', 'Potentiometer', 'Armrest', 'Seat Post'],
+            correct: 'Squeegee System'
+          },
+          {
+            symptom: 'Whole machine is dead and battery set is known good.',
+            tags: ['main control fault'],
+            choices: ['Controller', 'Brush', 'Recovery Lid', 'Mirror'],
+            correct: 'Controller'
+          }
+        ]
+      }
+    };
+
+    const BONUS_QUESTIONS = [
+      {
+        question: 'You are testing a 24V machine with two 12V batteries. What is the proper load testing approach?',
+        choices: [
+          'Load test both 12V batteries together at the same time',
+          'Load test one 12V battery at a time',
+          'Only check charger output and skip battery testing',
+          'Test the horn circuit first'
+        ],
+        correct: 'Load test one 12V battery at a time'
+      },
+      {
+        question: 'A 36V machine uses 6V batteries. What is the proper way to load test them in the field?',
+        choices: [
+          'Test all 6 batteries at once',
+          'Test 3 batteries at a time',
+          'Test 1–2 6V batteries at a time',
+          'Only read open-circuit voltage'
+        ],
+        correct: 'Test 1–2 6V batteries at a time'
+      },
+      {
+        question: 'A machine drops voltage hard under load but resting voltage looked decent. Most likely cause?',
+        choices: [
+          'Weak battery set',
+          'Broken seat cover',
+          'Bad decal',
+          'Loose basket'
+        ],
+        correct: 'Weak battery set'
+      },
+      {
+        question: 'A charger is plugged in but the machine still fails a load test badly. What matters more here?',
+        choices: [
+          'Battery condition under load',
+          'Color of the battery cables',
+          'Whether the horn works',
+          'If the basket is installed'
+        ],
+        correct: 'Battery condition under load'
+      }
+    ];
+
+    const state = {
+      tech: 'Derrick',
+      mode: 'campaign',
+      currentLevel: 1,
+      levelRoundIndex: 0,
+      score: 0,
+      streak: 0,
+      bestStreak: 0,
+      timer: null,
+      timeLeft: 20,
+      awaitingNext: false,
+      awaitingBonusNext: false
+    };
+
+    function $(id){ return document.getElementById(id); }
+
+    function shuffle(arr){
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function setHidden(id, hidden){
+      $(id).classList.toggle('hidden', hidden);
+    }
+
+    function updateHud(){
+      $('hudTech').innerText = state.tech;
+      $('hudLevel').innerText = `${state.currentLevel} - ${LEVELS[state.currentLevel].name}`;
+      $('hudRound').innerText = `${state.levelRoundIndex + 1} / ${LEVELS[state.currentLevel].rounds.length}`;
+      $('hudScore').innerText = state.score;
+      $('hudStreak').innerText = state.streak;
+      $('hudTimer').innerText = state.timeLeft;
+    }
+
+    function showFeedback(boxId, text, good){
+      const box = $(boxId);
+      box.innerText = text;
+      box.className = `feedback ${good ? 'good' : 'bad'}`;
+      box.style.display = 'block';
+    }
+
+    function clearFeedback(boxId){
+      const box = $(boxId);
+      box.style.display = 'none';
+      box.innerText = '';
+      box.className = 'feedback';
+    }
+
+    function getCurrentRound(){
+      return LEVELS[state.currentLevel].rounds[state.levelRoundIndex];
+    }
+
+    function startTimer(){
+      stopTimer();
+      state.timeLeft = LEVELS[state.currentLevel].timePerRound;
+      updateHud();
+
+      state.timer = setInterval(() => {
+        state.timeLeft -= 1;
+        updateHud();
+
+        if (state.timeLeft <= 0) {
+          stopTimer();
+          handleWrongAnswer('Time expired. The machine is still down.');
+        }
+      }, 1000);
+    }
+
+    function stopTimer(){
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+    }
+
+    function renderTags(tags){
+      const wrap = $('tagWrap');
+      wrap.innerHTML = tags.map(tag => `<span class="badge">${tag}</span>`).join('');
+    }
+
+    function renderRound(){
+      clearFeedback('feedbackBox');
+      clearFeedback('bonusFeedback');
+      setHidden('gameCard', false);
+      setHidden('bonusCard', true);
+
+      const round = getCurrentRound();
+      $('scenarioTitle').innerText = `Level ${state.currentLevel} — ${LEVELS[state.currentLevel].name}`;
+      $('symptomText').innerText = round.symptom;
+      renderTags(round.tags || []);
+
+      const choicesWrap = $('choicesWrap');
+      choicesWrap.innerHTML = '';
+
+      const shuffledChoices = shuffle(round.choices);
+      shuffledChoices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.type = 'button';
+        btn.innerText = choice;
+        btn.addEventListener('click', () => handleChoice(choice));
+        choicesWrap.appendChild(btn);
+      });
+
+      state.awaitingNext = false;
+      updateHud();
+      startTimer();
+    }
+
+    function handleChoice(choice){
+      if (state.awaitingNext) return;
+
+      const round = getCurrentRound();
+      if (choice === round.correct) {
+        stopTimer();
+        const timeBonus = state.timeLeft * 5;
+        const streakBonus = state.streak * 10;
+        state.score += 100 + timeBonus + streakBonus;
+        state.streak += 1;
+        state.bestStreak = Math.max(state.bestStreak, state.streak);
+        updateHud();
+
+        showFeedback(
+          'feedbackBox',
+          `Correct. You swapped the right part: ${round.correct}. +${100 + timeBonus + streakBonus} points.`,
+          true
+        );
+
+        state.awaitingNext = true;
+        setTimeout(showBonusRound, 900);
+      } else {
+        stopTimer();
+        handleWrongAnswer(`Wrong part. Correct answer was ${round.correct}.`);
+      }
+    }
+
+    function handleWrongAnswer(message){
+      state.streak = 0;
+      updateHud();
+      showFeedback('feedbackBox', message, false);
+      state.awaitingNext = true;
+      setTimeout(nextRoundOrLevel, 1100);
+    }
+
+    function showBonusRound(){
+      setHidden('bonusCard', false);
+
+      const q = BONUS_QUESTIONS[Math.floor(Math.random() * BONUS_QUESTIONS.length)];
+      state.currentBonus = q;
+      $('bonusQuestion').innerText = q.question;
+
+      const wrap = $('bonusChoices');
+      wrap.innerHTML = '';
+      clearFeedback('bonusFeedback');
+
+      shuffle(q.choices).forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.type = 'button';
+        btn.innerText = choice;
+        btn.addEventListener('click', () => handleBonusChoice(choice));
+        wrap.appendChild(btn);
+      });
+
+      state.awaitingBonusNext = false;
+    }
+
+    function handleBonusChoice(choice){
+      if (state.awaitingBonusNext) return;
+      state.awaitingBonusNext = true;
+
+      const q = state.currentBonus;
+      if (choice === q.correct) {
+        state.score += 150;
+        state.streak += 1;
+        state.bestStreak = Math.max(state.bestStreak, state.streak);
+        updateHud();
+        showFeedback('bonusFeedback', `Correct. Battery bonus banked. +150 points.`, true);
+      } else {
+        state.streak = 0;
+        updateHud();
+        showFeedback('bonusFeedback', `Incorrect. Correct answer: ${q.correct}`, false);
+      }
+
+      setTimeout(nextRoundOrLevel, 1100);
+    }
+
+    function nextRoundOrLevel(){
+      setHidden('bonusCard', true);
+
+      const level = LEVELS[state.currentLevel];
+      state.levelRoundIndex += 1;
+
+      if (state.levelRoundIndex < level.rounds.length) {
+        renderRound();
+        return;
+      }
+
+      if (state.mode === 'quick') {
+        endGame();
+        return;
+      }
+
+      if (state.currentLevel < 3) {
+        state.currentLevel += 1;
+        state.levelRoundIndex = 0;
+        renderRound();
+      } else {
+        endGame();
+      }
+    }
+
+    function endGame(){
+      stopTimer();
+      setHidden('gameCard', true);
+      setHidden('bonusCard', true);
+      setHidden('gameOverCard', false);
+
+      $('finalScore').innerText = state.score;
+      $('finalStreak').innerText = state.bestStreak;
+      $('finalLevel').innerText = `${state.currentLevel} - ${LEVELS[state.currentLevel].name}`;
+
+      const title =
+        state.score >= 2500 ? 'Master Tech Energy.' :
+        state.score >= 1600 ? 'Strong diagnostic run.' :
+        state.score >= 900 ? 'Solid field save.' :
+        'Machine survived. Mostly.';
+      $('gameOverTitle').innerText = title;
+    }
+
+    function saveScore(){
+      const scores = JSON.parse(localStorage.getItem('ecss_pitstop_scores') || '[]');
+      scores.push({
+        tech: state.tech,
+        score: state.score,
+        level: `${state.currentLevel} - ${LEVELS[state.currentLevel].name}`,
+        streak: state.bestStreak,
+        date: new Date().toLocaleDateString()
+      });
+
+      scores.sort((a, b) => b.score - a.score);
+      localStorage.setItem('ecss_pitstop_scores', JSON.stringify(scores.slice(0, 20)));
+      renderLeaderboard();
+      alert('Score saved.');
+    }
+
+    function clearLeaderboard(){
+      if (!confirm('Clear the leaderboard?')) return;
+      localStorage.removeItem('ecss_pitstop_scores');
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard(){
+      const body = $('leaderboardBody');
+      const scores = JSON.parse(localStorage.getItem('ecss_pitstop_scores') || '[]');
+
+      if (!scores.length) {
+        body.innerHTML = '<tr><td colspan="6">No scores yet.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = scores.map((row, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${row.tech}</td>
+          <td>${row.score}</td>
+          <td>${row.level}</td>
+          <td>${row.streak}</td>
+          <td>${row.date}</td>
+        </tr>
+      `).join('');
+    }
+
+    function resetState(){
+      stopTimer();
+      state.tech = $('techSelect').value;
+      state.mode = $('modeSelect').value;
+      state.currentLevel = 1;
+      state.levelRoundIndex = 0;
+      state.score = 0;
+      state.streak = 0;
+      state.bestStreak = 0;
+      state.awaitingNext = false;
+      state.awaitingBonusNext = false;
+      state.currentBonus = null;
+    }
+
+    function startGame(){
+      resetState();
+      setHidden('setupCard', true);
+      setHidden('hudCard', false);
+      setHidden('gameOverCard', true);
+      renderRound();
+    }
+
+    $('startBtn').addEventListener('click', startGame);
+    $('playAgainBtn').addEventListener('click', () => {
+      setHidden('setupCard', false);
+      setHidden('hudCard', true);
+      setHidden('gameOverCard', true);
+      startGame();
+    });
+    $('saveScoreBtn').addEventListener('click', saveScore);
+    $('resetBoardBtn').addEventListener('click', clearLeaderboard);
+
+    renderLeaderboard();
+  </script>
+</body>
+</html>
