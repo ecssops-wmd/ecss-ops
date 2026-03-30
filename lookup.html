@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Part Lookup</title>
+
+  <style>
+    :root{
+      --navy:#122644;
+      --green:#198754;
+      --bg:#f1f3f4;
+      --card:#ffffff;
+      --border:#d7e0ea;
+      --text:#15273F;
+      --muted:#5f7084;
+      --soft:#eaf1fb;
+      --battery:#fff7cc;
+      --remove:#D8342A;
+      --search-accent:#9fd6b3;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      width:100%;
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial,sans-serif;
+      -webkit-text-size-adjust:100%;
+    }
+
+    *{ box-sizing:border-box; }
+
+    .header{
+      background:var(--navy);
+      color:white;
+      padding:14px;
+      text-align:center;
+    }
+
+    .title{
+      font-size:24px;
+      font-weight:900;
+    }
+
+    .subtitle{
+      background:var(--green);
+      padding:10px;
+      margin-top:8px;
+      border-radius:12px;
+      font-weight:900;
+    }
+
+    .status{
+      font-size:13px;
+      margin-top:6px;
+      color:#d7dfeb;
+      min-height:18px;
+    }
+
+    .container{
+      max-width:760px;
+      margin:auto;
+      padding:14px;
+    }
+
+    .back{
+      display:block;
+      background:white;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+      font-weight:900;
+      margin-bottom:12px;
+      text-decoration:none;
+      color:black;
+    }
+
+    .section{
+      text-align:center;
+      font-weight:900;
+      margin-top:16px;
+      margin-bottom:10px;
+    }
+
+    .search-input{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:2px solid var(--search-accent);
+      box-shadow:0 0 0 3px rgba(25,135,84,0.08);
+      font-size:16px;
+      background:white;
+    }
+
+    .search-results{
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-top:6px;
+      background:white;
+      display:none;
+      overflow:hidden;
+      max-height:320px;
+      overflow-y:auto;
+    }
+
+    .search-item{
+      padding:10px;
+      border-bottom:1px solid #eee;
+      cursor:pointer;
+    }
+
+    .search-item:last-child{
+      border-bottom:none;
+    }
+
+    .search-title{
+      font-weight:900;
+      font-size:16px;
+      line-height:1.25;
+    }
+
+    .search-desc{
+      font-size:14px;
+      margin-top:2px;
+    }
+
+    .search-meta{
+      font-size:12px;
+      color:#666;
+      margin-top:4px;
+      line-height:1.35;
+    }
+
+    .list-wrap{
+      margin-top:14px;
+    }
+
+    .list-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+    }
+
+    .list-title{
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .clear-btn{
+      background:white;
+      color:var(--remove);
+      border:1px solid #efc1bc;
+      border-radius:10px;
+      padding:8px 12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .card{
+      background:white;
+      padding:12px;
+      border-radius:12px;
+      margin-top:10px;
+      border:1px solid var(--border);
+    }
+
+    .card.battery{
+      background:var(--battery);
+      border-color:#e7cf63;
+    }
+
+    .title2{
+      font-weight:900;
+      font-size:16px;
+      line-height:1.3;
+    }
+
+    .meta{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:3px;
+      line-height:1.35;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      background:var(--soft);
+      font-size:12px;
+      font-weight:800;
+      margin-top:6px;
+      margin-right:5px;
+    }
+
+    .remove-btn{
+      margin-top:10px;
+      width:100%;
+      background:white;
+      color:var(--remove);
+      border:1px solid #efc1bc;
+      border-radius:12px;
+      padding:10px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .helper{
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      margin-top:10px;
+      line-height:1.35;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <div class="title">ECSS INVENTORY</div>
+    <div class="subtitle" id="pageSubtitle">Part Lookup</div>
+    <div class="status" id="statusMessage">Connecting to Supabase…</div>
+  </div>
+
+  <div class="container">
+
+    <a class="back" id="backLink" href="index.html">← Back to Menu</a>
+
+    <div class="section">Search Part</div>
+    <input id="searchBox" class="search-input" placeholder="Search part number, description, manufacturer, model, AKA, or spec">
+    <div id="searchResults" class="search-results"></div>
+
+    <div class="helper">
+      Tap a result to add it to a temporary reference list.<br>
+      This page does not submit anything.
+    </div>
+
+    <div class="list-wrap">
+      <div class="list-header">
+        <div class="list-title">Selected Parts</div>
+        <button id="clearBtn" class="clear-btn" type="button" style="display:none;">Clear List</button>
+      </div>
+
+      <div id="selectedList"></div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const SUPABASE_URL = 'https://ddpswufhwzljjoqsxazh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcHN3dWZod3psampvcXN4YXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzcwMTQsImV4cCI6MjA4OTg1MzAxNH0.I8nzAlkmCNgVQmtDFPFVoUxlmrxFneQQLk8gHh3v2II';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const TECH_CONFIG = {
+      derrick: { technician: 'Derrick', vanName: 'Derrick Van' },
+      joe: { technician: 'Joe', vanName: 'Joe Van' },
+      sarwat: { technician: 'Sarwat', vanName: 'Sarwat Van' },
+      sean: { technician: 'Sean', vanName: 'Sean Van' },
+      vinny: { technician: 'Vinny', vanName: 'Vinny Van' }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const techKey = (params.get('tech') || 'derrick').toLowerCase();
+    const activeTech = TECH_CONFIG[techKey] || TECH_CONFIG.derrick;
+
+    const TECHNICIAN = activeTech.technician;
+    const VAN_NAME = activeTech.vanName;
+    const WAREHOUSE_NAME = 'Warehouse';
+
+    let selectedParts = [];
+    let searchMatches = [];
+    let searchRequestId = 0;
+    let searchDebounceTimer = null;
+
+    function setStatus(text){
+      document.getElementById('statusMessage').innerText = text;
+    }
+
+    function isBattery(partNumber, description){
+      const blob = `${partNumber || ''} ${description || ''}`.toLowerCase();
+      return blob.includes('battery');
+    }
+
+    function getDisplayLabel(p){
+      if (isBattery(p.part_number, p.description)) {
+        return `⚡ ${p.part_number} — ${p.description}`;
+      }
+      return `${p.part_number} — ${p.description}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderSearchResults(){
+      const box = document.getElementById('searchResults');
+
+      if (!searchMatches.length) {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+      }
+
+      box.innerHTML = searchMatches.map((p, i) => `
+        <div class="search-item" data-index="${i}">
+          <div class="search-title">${escapeHtml(p.part_number)}</div>
+          <div class="search-desc">${escapeHtml(p.description || '')}</div>
+          <div class="search-meta">
+            Manufacturer: ${escapeHtml(p.vendor || '—')}<br>
+            Model: ${escapeHtml(p.model || '—')} | AKA: ${escapeHtml(p.aka || '—')}<br>
+            Spec: ${escapeHtml(p.spec || '—')}<br>
+            Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
+          </div>
+        </div>
+      `).join('');
+
+      box.style.display = 'block';
+
+      [...box.querySelectorAll('.search-item')].forEach(el => {
+        el.addEventListener('click', () => {
+          const index = Number(el.dataset.index);
+          addSelected(index);
+        });
+      });
+    }
+
+    function addSelected(index){
+      const p = searchMatches[index];
+      if (!p) return;
+
+      const existingIndex = selectedParts.findIndex(x => x.part_id === p.part_id);
+      if (existingIndex >= 0) {
+        return;
+      }
+
+      selectedParts.unshift({
+        part_id: p.part_id,
+        part_number: p.part_number,
+        description: p.description,
+        vendor: p.vendor,
+        model: p.model,
+        aka: p.aka,
+        spec: p.spec,
+        warehouseQty: p.warehouse_qty,
+        myVanQty: p.van_qty,
+        parQty: p.par_qty
+      });
+
+      document.getElementById('searchBox').value = '';
+      searchMatches = [];
+      renderSearchResults();
+      renderSelectedList();
+      setStatus('Ready to search for part(s)');
+    }
+
+    function renderSelectedList(){
+      const list = document.getElementById('selectedList');
+      const clearBtn = document.getElementById('clearBtn');
+
+      clearBtn.style.display = selectedParts.length ? 'inline-block' : 'none';
+
+      list.innerHTML = selectedParts.map((p, i) => `
+        <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
+          <div class="title2">${escapeHtml(getDisplayLabel(p))}</div>
+
+          <div class="meta">Manufacturer: ${escapeHtml(p.vendor || '—')}</div>
+          <div class="meta">Model: ${escapeHtml(p.model || '—')}</div>
+          <div class="meta">AKA: ${escapeHtml(p.aka || '—')}</div>
+          <div class="meta">Spec: ${escapeHtml(p.spec || '—')}</div>
+
+          <div class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</div>
+          <div class="pill">My Van: ${escapeHtml(p.myVanQty)}</div>
+          <div class="pill">Par: ${escapeHtml(p.parQty)}</div>
+
+          <button class="remove-btn" type="button" data-index="${i}">Remove Part</button>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', () => removeSelected(Number(btn.dataset.index)));
+      });
+    }
+
+    function removeSelected(index){
+      selectedParts.splice(index, 1);
+      renderSelectedList();
+    }
+
+    function clearList(){
+      selectedParts = [];
+      renderSelectedList();
+    }
+
+    async function searchParts() {
+      const term = document.getElementById('searchBox').value.trim();
+
+      clearTimeout(searchDebounceTimer);
+
+      if (!term) {
+        searchMatches = [];
+        renderSearchResults();
+        setStatus('Ready to search for part(s)');
+        return;
+      }
+
+      searchDebounceTimer = setTimeout(async () => {
+        const requestId = ++searchRequestId;
+
+        try {
+          setStatus('Searching parts…');
+
+          const { data, error } = await supabase.rpc('search_parts_for_usage', {
+            search_text: term,
+            van_location_name: VAN_NAME,
+            warehouse_location_name: WAREHOUSE_NAME
+          });
+
+          if (requestId !== searchRequestId) return;
+          if (error) throw error;
+
+          searchMatches = Array.isArray(data) ? data : [];
+          renderSearchResults();
+          setStatus(searchMatches.length ? 'Ready to select part(s)' : 'No matching parts found');
+        } catch (error) {
+          if (requestId !== searchRequestId) return;
+          console.error(error);
+          setStatus(`Search failed: ${error.message}`);
+        }
+      }, 200);
+    }
+
+    function init(){
+      document.title = `Part Lookup - ${TECHNICIAN}`;
+      document.getElementById('pageSubtitle').innerText = `${TECHNICIAN} — Part Lookup`;
+      document.getElementById('backLink').href = `index.html?tech=${encodeURIComponent(techKey)}`;
+      document.getElementById('clearBtn').addEventListener('click', clearList);
+      document.getElementById('searchBox').addEventListener('input', searchParts);
+
+      document.addEventListener('click', function(event){
+        const box = document.getElementById('searchResults');
+        const input = document.getElementById('searchBox');
+
+        if (!box.contains(event.target) && event.target !== input) {
+          box.style.display = 'none';
+        }
+      });
+
+      setStatus('Ready to search for part(s)');
+    }
+
+    window.onload = init;
+  </script>
+
+</body>
+</html>
