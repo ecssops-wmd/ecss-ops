@@ -329,7 +329,6 @@
     let selectedParts = [];
     let searchMatches = [];
     let vanLocationId = null;
-    let warehouseLocationId = null;
     let searchRequestId = 0;
     let searchDebounceTimer = null;
 
@@ -385,14 +384,10 @@
           <div class="search-title">${escapeHtml(p.part_number)}</div>
           <div class="search-desc">${escapeHtml(p.description || '')}</div>
           <div class="search-meta">
-            Part Notes: ${escapeHtml(p.notes || '—')}<br>
             Manufacturer: ${escapeHtml(p.vendor || '—')}<br>
-            Category: ${escapeHtml(p.category || '—')}<br>
             Model: ${escapeHtml(p.model || '—')}<br>
             AKA: ${escapeHtml(p.aka || '—')}<br>
             Spec: ${escapeHtml(p.spec || '—')}<br>
-            Application: ${escapeHtml(p.application || '—')}<br>
-            Includes: ${escapeHtml(p.includes || '—')}<br>
             Warehouse: ${escapeHtml(p.warehouse_qty)} | Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
           </div>
         </div>
@@ -422,12 +417,9 @@
           description: p.description,
           notes: p.notes,
           vendor: p.vendor,
-          category: p.category,
           model: p.model,
           aka: p.aka,
           spec: p.spec,
-          application: p.application,
-          includes: p.includes,
           warehouseQty: p.warehouse_qty,
           vanQty: p.van_qty,
           parQty: p.par_qty,
@@ -448,14 +440,10 @@
       container.innerHTML = selectedParts.map((p, i) => `
         <div class="card selected ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
           <div class="part-title">${escapeHtml(getDisplayLabel(p))}</div>
-          <div class="meta">Part Notes: ${escapeHtml(p.notes || '—')}</div>
           <div class="meta">Manufacturer: ${escapeHtml(p.vendor || '—')}</div>
-          <div class="meta">Category: ${escapeHtml(p.category || '—')}</div>
           <div class="meta">Model: ${escapeHtml(p.model || '—')}</div>
           <div class="meta">AKA: ${escapeHtml(p.aka || '—')}</div>
           <div class="meta">Spec: ${escapeHtml(p.spec || '—')}</div>
-          <div class="meta">Application: ${escapeHtml(p.application || '—')}</div>
-          <div class="meta">Includes: ${escapeHtml(p.includes || '—')}</div>
           <div class="meta">Location: ${escapeHtml(VAN_NAME)}</div>
 
           <div class="pills">
@@ -515,15 +503,15 @@
       const { data, error } = await supabase
         .from('locations')
         .select('id, name')
-        .in('name', [VAN_NAME, WAREHOUSE_NAME]);
+        .eq('name', VAN_NAME)
+        .limit(1);
 
       if (error) throw error;
 
-      vanLocationId = data.find(x => x.name === VAN_NAME)?.id ?? null;
-      warehouseLocationId = data.find(x => x.name === WAREHOUSE_NAME)?.id ?? null;
+      vanLocationId = data?.[0]?.id ?? null;
 
-      if (!vanLocationId || !warehouseLocationId) {
-        throw new Error('Could not find required locations.');
+      if (!vanLocationId) {
+        throw new Error('Could not find required van location.');
       }
     }
 
