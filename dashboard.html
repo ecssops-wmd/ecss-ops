@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    :root{
+      --navy:#122644;
+      --bg:#f1f3f4;
+      --card:#ffffff;
+      --border:#d7e0ea;
+      --text:#15273F;
+      --muted:#5f7084;
+
+      --tech:#2F6FED;
+      --warehouse:#b26a00;
+      --tools:#198754;
+      --returns:#D8342A;
+    }
+
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .header{
+      background:var(--navy);
+      color:white;
+      padding:16px;
+      text-align:center;
+    }
+
+    .title{
+      font-size:26px;
+      font-weight:900;
+    }
+
+    .subtitle{
+      margin-top:6px;
+      font-size:14px;
+      opacity:.9;
+    }
+
+    .container{
+      max-width:700px;
+      margin:auto;
+      padding:16px;
+    }
+
+    .section{
+      font-weight:900;
+      margin-top:18px;
+      margin-bottom:8px;
+    }
+
+    .btn{
+      display:block;
+      width:100%;
+      background:white;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      margin-bottom:10px;
+      text-decoration:none;
+      color:black;
+      font-weight:900;
+      text-align:left;
+    }
+
+    .btn.tech{ border-left:8px solid var(--tech); }
+    .btn.warehouse{ border-left:8px solid var(--warehouse); }
+    .btn.tools{ border-left:8px solid var(--tools); }
+    .btn.returns{ border-left:8px solid var(--returns); }
+
+    .btn-title{
+      font-size:16px;
+      margin-bottom:4px;
+    }
+
+    .btn-sub{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="title">Warehouse Manager Console</div>
+  <div class="subtitle">Control Panel</div>
+</div>
+
+<div class="container">
+
+  <div class="section">Technician Portals</div>
+
+  <a class="btn tech" href="<?= APP_URL ?>?page=index_derrick">
+    <div class="btn-title">Derrick</div>
+    <div class="btn-sub">Full access</div>
+  </a>
+
+  <a class="btn tech" href="<?= APP_URL ?>?page=index_vinny">
+    <div class="btn-title">Vinny</div>
+  </a>
+
+  <a class="btn tech" href="<?= APP_URL ?>?page=index_joe">
+    <div class="btn-title">Joe</div>
+  </a>
+
+  <a class="btn tech" href="<?= APP_URL ?>?page=index_sarwat">
+    <div class="btn-title">Sarwat</div>
+  </a>
+
+  <a class="btn tech" href="<?= APP_URL ?>?page=index_sean">
+    <div class="btn-title">Sean</div>
+  </a>
+
+  <div class="section">Warehouse Control</div>
+
+  <a class="btn warehouse" href="<?= APP_URL ?>?page=warehouse_adjustment_derrick">
+    <div class="btn-title">Warehouse Adjustment</div>
+    <div class="btn-sub">Correct warehouse inventory counts</div>
+  </a>
+
+  <a class="btn tools" href="<?= APP_URL ?>?page=delivery_intake_derrick">
+    <div class="btn-title">Delivery Intake</div>
+    <div class="btn-sub">Receive incoming parts from vendors and suppliers</div>
+  </a>
+
+  <a class="btn returns" href="<?= APP_URL ?>?page=returns">
+    <div class="btn-title">Returns Processing</div>
+    <div class="btn-sub">Review and process open core, warranty, and defective returns</div>
+  </a>
+
+  <div class="section">Tools</div>
+
+  <a class="btn tools" href="<?= APP_URL ?>?page=lookup_derrick">
+    <div class="btn-title">Part Lookup</div>
+    <div class="btn-sub">Quick search tool</div>
+  </a>
+
+</div>
+
+</body>
+</html>
