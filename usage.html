@@ -117,6 +117,8 @@
       background:white;
       display:none;
       overflow:hidden;
+      max-height:320px;
+      overflow-y:auto;
     }
 
     .search-item{
@@ -328,6 +330,8 @@
     let searchMatches = [];
     let vanLocationId = null;
     let warehouseLocationId = null;
+    let searchRequestId = 0;
+    let searchDebounceTimer = null;
 
     function setStatus(text) {
       document.getElementById('statusMessage').innerText = text;
@@ -402,17 +406,22 @@
       const p = searchMatches[index];
       if (!p) return;
 
-      selectedParts.unshift({
-        part_id: p.part_id,
-        part_number: p.part_number,
-        description: p.description,
-        notes: p.notes,
-        vendor: p.vendor,
-        warehouseQty: p.warehouseQty,
-        vanQty: p.vanQty,
-        parQty: p.parQty,
-        qty: 1
-      });
+      const existingIndex = selectedParts.findIndex(x => x.part_id === p.part_id);
+      if (existingIndex >= 0) {
+        selectedParts[existingIndex].qty += 1;
+      } else {
+        selectedParts.unshift({
+          part_id: p.part_id,
+          part_number: p.part_number,
+          description: p.description,
+          notes: p.notes,
+          vendor: p.vendor,
+          warehouseQty: p.warehouseQty,
+          vanQty: p.vanQty,
+          parQty: p.parQty,
+          qty: 1
+        });
+      }
 
       document.getElementById('searchBox').value = '';
       searchMatches = [];
@@ -514,6 +523,7 @@
             inventory(
               quantity_on_hand,
               par_quantity,
+              location_id,
               locations(name)
             )
           )
@@ -537,6 +547,7 @@
           inventory(
             quantity_on_hand,
             par_quantity,
+            location_id,
             locations(name)
           )
         `)
@@ -549,10 +560,10 @@
 
     function normalizePartRecord(record) {
       const part = record.parts ? record.parts : record;
-
       const inventories = Array.isArray(part.inventory) ? part.inventory : [];
-      const vanInventory = inventories.find(x => x.locations?.name === VAN_NAME);
-      const warehouseInventory = inventories.find(x => x.locations?.name === WAREHOUSE_NAME);
+
+      const vanInventory = inventories.find(x => x.location_id === vanLocationId || x.locations?.name === VAN_NAME);
+      const warehouseInventory = inventories.find(x => x.location_id === warehouseLocationId || x.locations?.name === WAREHOUSE_NAME);
 
       return {
         part_id: part.id,
@@ -568,43 +579,54 @@
 
     async function searchParts() {
       const term = document.getElementById('searchBox').value.trim();
+
+      clearTimeout(searchDebounceTimer);
+
       if (!term) {
         searchMatches = [];
         renderSearchResults();
+        setStatus('Ready to search for part(s)');
         return;
       }
 
-      try {
-        setStatus('Searching parts…');
+      searchDebounceTimer = setTimeout(async () => {
+        const requestId = ++searchRequestId;
 
-        const [aliasRows, descRows] = await Promise.all([
-          searchByAlias(term),
-          searchByDescription(term)
-        ]);
+        try {
+          setStatus('Searching parts…');
 
-        const merged = new Map();
+          const [aliasRows, descRows] = await Promise.all([
+            searchByAlias(term),
+            searchByDescription(term)
+          ]);
 
-        for (const row of aliasRows) {
-          const normalized = normalizePartRecord(row);
-          if (!merged.has(normalized.part_id)) {
-            merged.set(normalized.part_id, normalized);
+          if (requestId !== searchRequestId) return;
+
+          const merged = new Map();
+
+          for (const row of aliasRows) {
+            const normalized = normalizePartRecord(row);
+            if (!merged.has(normalized.part_id)) {
+              merged.set(normalized.part_id, normalized);
+            }
           }
-        }
 
-        for (const row of descRows) {
-          const normalized = normalizePartRecord(row);
-          if (!merged.has(normalized.part_id)) {
-            merged.set(normalized.part_id, normalized);
+          for (const row of descRows) {
+            const normalized = normalizePartRecord(row);
+            if (!merged.has(normalized.part_id)) {
+              merged.set(normalized.part_id, normalized);
+            }
           }
-        }
 
-        searchMatches = Array.from(merged.values()).slice(0, 8);
-        renderSearchResults();
-        setStatus(searchMatches.length ? 'Ready to select part(s)' : 'No matching parts found');
-      } catch (error) {
-        console.error(error);
-        setStatus(`Search failed: ${error.message}`);
-      }
+          searchMatches = Array.from(merged.values()).slice(0, 8);
+          renderSearchResults();
+          setStatus(searchMatches.length ? 'Ready to select part(s)' : 'No matching parts found');
+        } catch (error) {
+          if (requestId !== searchRequestId) return;
+          console.error(error);
+          setStatus(`Search failed: ${error.message}`);
+        }
+      }, 200);
     }
 
     async function submitUsage() {
