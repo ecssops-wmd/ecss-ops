@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ECSS Parts Used</title>
+
+  <style>
+    :root{
+      --navy:#122644;
+      --blue:#2F6FED;
+      --bg:#f1f3f4;
+      --card:#ffffff;
+      --border:#d7e0ea;
+      --text:#15273F;
+      --muted:#5f7084;
+      --red:#D8342A;
+      --battery:#fff7cc;
+      --soft:#eaf1fb;
+      --search-accent:#efc1bc;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      width:100%;
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial,sans-serif;
+      -webkit-text-size-adjust:100%;
+    }
+
+    *{ box-sizing:border-box; }
+
+    .header{
+      background:var(--navy);
+      color:white;
+      padding:14px;
+      text-align:center;
+    }
+
+    .title{
+      font-size:26px;
+      font-weight:900;
+    }
+
+    .subtitle{
+      background:var(--red);
+      padding:10px;
+      margin-top:8px;
+      border-radius:12px;
+      font-weight:900;
+    }
+
+    .status{
+      font-size:13px;
+      margin-top:6px;
+      color:#d7dfeb;
+      min-height:18px;
+      transition:opacity .25s ease;
+    }
+
+    .content{
+      max-width:760px;
+      margin:auto;
+      padding:14px 14px 110px;
+    }
+
+    .back{
+      display:block;
+      background:white;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+      font-weight:900;
+      margin-bottom:10px;
+      text-decoration:none;
+      color:black;
+    }
+
+    .section{
+      text-align:center;
+      font-weight:900;
+      margin-top:16px;
+      margin-bottom:10px;
+    }
+
+    input,textarea{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:16px;
+      background:white;
+    }
+
+    textarea{
+      min-height:70px;
+      resize:vertical;
+    }
+
+    .search-wrap{
+      position:relative;
+    }
+
+    .search-input{
+      border:2px solid var(--search-accent);
+      box-shadow:0 0 0 3px rgba(216,52,42,0.08);
+    }
+
+    .search-results{
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-top:6px;
+      background:white;
+      display:none;
+      overflow:hidden;
+    }
+
+    .search-item{
+      padding:10px;
+      border-bottom:1px solid #eee;
+      cursor:pointer;
+    }
+
+    .search-item:last-child{
+      border-bottom:none;
+    }
+
+    .search-title{
+      font-weight:900;
+      font-size:16px;
+    }
+
+    .search-desc{
+      font-size:14px;
+      margin-top:2px;
+    }
+
+    .search-meta{
+      font-size:12px;
+      color:#666;
+      margin-top:4px;
+      line-height:1.35;
+    }
+
+    .selected-list{
+      margin-top:12px;
+    }
+
+    .card{
+      background:white;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .card.selected{
+      background:#eaf3ff;
+      border-color:#8eb8ff;
+    }
+
+    .card.battery{
+      background:var(--battery);
+      border-color:#e7cf63;
+    }
+
+    .part-title{
+      font-weight:900;
+      font-size:17px;
+      line-height:1.25;
+      margin-bottom:4px;
+    }
+
+    .meta{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:2px;
+      line-height:1.35;
+    }
+
+    .pills{
+      margin-top:8px;
+      margin-bottom:8px;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      margin-right:5px;
+      margin-top:4px;
+      background:var(--soft);
+    }
+
+    .pill.battery{
+      background:#fff3cd;
+      color:#7a5a00;
+    }
+
+    .qty-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+    }
+
+    .qty-control{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .qty-btn{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:10px;
+      background:var(--blue);
+      color:white;
+      font-size:26px;
+      font-weight:900;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+    }
+
+    .qty-input{
+      width:70px;
+      text-align:center;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .remove-btn{
+      margin-top:10px;
+      width:100%;
+      background:white;
+      color:var(--red);
+      border:1px solid #efc1bc;
+      border-radius:12px;
+      padding:11px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .submit-bar{
+      position:sticky;
+      bottom:0;
+      background:linear-gradient(to top,var(--bg) 70%,transparent);
+      padding:10px;
+    }
+
+    .submit{
+      width:100%;
+      background:var(--red);
+      color:white;
+      border:none;
+      padding:14px;
+      font-size:18px;
+      font-weight:900;
+      border-radius:14px;
+      cursor:pointer;
+      margin-top:0;
+    }
+
+    .submit:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="title">ECSS INVENTORY</div>
+    <div class="subtitle">Derrick — Parts Used</div>
+    <div class="status" id="statusMessage">Connecting to Supabase…</div>
+  </div>
+
+  <div class="content">
+    <a class="back" href="index.html">← Back to Menu</a>
+
+    <div class="section">Store / inc # / po #</div>
+    <input id="storeRef" type="text">
+
+    <div class="section">Add Part(s)</div>
+    <div class="search-wrap">
+      <input id="searchBox" class="search-input" type="text" placeholder="Search part number / description">
+      <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <div id="selectedList" class="selected-list"></div>
+
+    <div class="section">Notes</div>
+    <textarea id="notes" placeholder="Optional"></textarea>
+  </div>
+
+  <div class="submit-bar">
+    <button class="submit" id="submitBtn">Submit</button>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const SUPABASE_URL = 'https://ddpswufhwzljjoqsxazh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcHN3dWZod3psampvcXN4YXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzcwMTQsImV4cCI6MjA4OTg1MzAxNH0.I8nzAlkmCNgVQmtDFPFVoUxlmrxFneQQLk8gHh3v2II';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const TECHNICIAN = 'Derrick';
+    const VAN_NAME = 'Derrick Van';
+    const WAREHOUSE_NAME = 'Warehouse';
+
+    let selectedParts = [];
+    let searchMatches = [];
+    let vanLocationId = null;
+    let warehouseLocationId = null;
+
+    function setStatus(text) {
+      document.getElementById('statusMessage').innerText = text;
+    }
+
+    function isBattery(partNumber, description) {
+      const blob = `${partNumber || ''} ${description || ''}`.toLowerCase();
+      return blob.includes('battery');
+    }
+
+    function getDisplayLabel(part) {
+      if (isBattery(part.part_number, part.description)) {
+        return `⚡ ${part.part_number} — ${part.description}`;
+      }
+      return `${part.part_number} — ${part.description}`;
+    }
+
+    function updateSubmitButton() {
+      const btn = document.getElementById('submitBtn');
+      const total = selectedParts.reduce((sum, p) => sum + Number(p.qty || 0), 0);
+
+      if (total <= 0) {
+        btn.innerText = 'Submit';
+      } else if (total === 1) {
+        btn.innerText = 'Submit 1 Part Used';
+      } else {
+        btn.innerText = `Submit ${total} Parts Used`;
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderSearchResults() {
+      const box = document.getElementById('searchResults');
+
+      if (!searchMatches.length) {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+      }
+
+      box.innerHTML = searchMatches.map((p, i) => `
+        <div class="search-item" data-index="${i}">
+          <div class="search-title">${escapeHtml(p.part_number)}</div>
+          <div class="search-desc">${escapeHtml(p.description || '')}</div>
+          <div class="search-meta">
+            Part Notes: ${escapeHtml(p.notes || '—')}<br>
+            Manufacturer: ${escapeHtml(p.vendor || '—')}<br>
+            Warehouse: ${escapeHtml(p.warehouseQty)} | Van: ${escapeHtml(p.vanQty)} | Par: ${escapeHtml(p.parQty)}
+          </div>
+        </div>
+      `).join('');
+
+      box.style.display = 'block';
+
+      [...box.querySelectorAll('.search-item')].forEach(el => {
+        el.addEventListener('click', () => {
+          const index = Number(el.dataset.index);
+          selectPart(index);
+        });
+      });
+    }
+
+    function selectPart(index) {
+      const p = searchMatches[index];
+      if (!p) return;
+
+      selectedParts.unshift({
+        part_id: p.part_id,
+        part_number: p.part_number,
+        description: p.description,
+        notes: p.notes,
+        vendor: p.vendor,
+        warehouseQty: p.warehouseQty,
+        vanQty: p.vanQty,
+        parQty: p.parQty,
+        qty: 1
+      });
+
+      document.getElementById('searchBox').value = '';
+      searchMatches = [];
+      renderSearchResults();
+      renderSelectedParts();
+      setStatus('Ready to search for part(s)');
+    }
+
+    function renderSelectedParts() {
+      const container = document.getElementById('selectedList');
+
+      container.innerHTML = selectedParts.map((p, i) => `
+        <div class="card selected ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
+          <div class="part-title">${escapeHtml(getDisplayLabel(p))}</div>
+          <div class="meta">Part Notes: ${escapeHtml(p.notes || '—')}</div>
+          <div class="meta">Manufacturer: ${escapeHtml(p.vendor || '—')}</div>
+          <div class="meta">Location: ${escapeHtml(VAN_NAME)}</div>
+
+          <div class="pills">
+            <span class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</span>
+            <span class="pill">Van: ${escapeHtml(p.vanQty)}</span>
+            <span class="pill">Par: ${escapeHtml(p.parQty)}</span>
+            ${isBattery(p.part_number, p.description) ? '<span class="pill battery">⚡ Battery</span>' : ''}
+          </div>
+
+          <div class="qty-row">
+            <div class="qty-control">
+              <button class="qty-btn" data-action="minus" data-index="${i}">−</button>
+              <input class="qty-input" id="qty_${i}" value="${escapeHtml(p.qty)}" data-action="input" data-index="${i}">
+              <button class="qty-btn" data-action="plus" data-index="${i}">+</button>
+            </div>
+          </div>
+
+          <button class="remove-btn" data-action="remove" data-index="${i}">Remove Part</button>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('[data-action="minus"]').forEach(btn => {
+        btn.addEventListener('click', () => changeQty(Number(btn.dataset.index), -1));
+      });
+
+      container.querySelectorAll('[data-action="plus"]').forEach(btn => {
+        btn.addEventListener('click', () => changeQty(Number(btn.dataset.index), 1));
+      });
+
+      container.querySelectorAll('[data-action="remove"]').forEach(btn => {
+        btn.addEventListener('click', () => removePart(Number(btn.dataset.index)));
+      });
+
+      container.querySelectorAll('[data-action="input"]').forEach(input => {
+        input.addEventListener('change', () => setQty(Number(input.dataset.index), input.value));
+      });
+
+      updateSubmitButton();
+    }
+
+    function changeQty(index, delta) {
+      selectedParts[index].qty = Math.max(1, Number(selectedParts[index].qty || 1) + delta);
+      renderSelectedParts();
+    }
+
+    function setQty(index, value) {
+      selectedParts[index].qty = Math.max(1, Number(value || 1));
+      renderSelectedParts();
+    }
+
+    function removePart(index) {
+      selectedParts.splice(index, 1);
+      renderSelectedParts();
+    }
+
+    async function loadLocationIds() {
+      const { data, error } = await supabase
+        .from('locations')
+        .select('id, name')
+        .in('name', [VAN_NAME, WAREHOUSE_NAME]);
+
+      if (error) throw error;
+
+      vanLocationId = data.find(x => x.name === VAN_NAME)?.id ?? null;
+      warehouseLocationId = data.find(x => x.name === WAREHOUSE_NAME)?.id ?? null;
+
+      if (!vanLocationId || !warehouseLocationId) {
+        throw new Error('Could not find required locations.');
+      }
+    }
+
+    async function searchByAlias(term) {
+      const { data, error } = await supabase
+        .from('part_numbers')
+        .select(`
+          number_value,
+          parts!inner(
+            id,
+            part_number,
+            description,
+            notes,
+            vendor,
+            inventory(
+              quantity_on_hand,
+              par_quantity,
+              locations(name)
+            )
+          )
+        `)
+        .ilike('number_value', `%${term}%`)
+        .limit(20);
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    async function searchByDescription(term) {
+      const { data, error } = await supabase
+        .from('parts')
+        .select(`
+          id,
+          part_number,
+          description,
+          notes,
+          vendor,
+          inventory(
+            quantity_on_hand,
+            par_quantity,
+            locations(name)
+          )
+        `)
+        .or(`description.ilike.%${term}%,notes.ilike.%${term}%,aka.ilike.%${term}%,spec.ilike.%${term}%`)
+        .limit(20);
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    function normalizePartRecord(record) {
+      const part = record.parts ? record.parts : record;
+
+      const inventories = Array.isArray(part.inventory) ? part.inventory : [];
+      const vanInventory = inventories.find(x => x.locations?.name === VAN_NAME);
+      const warehouseInventory = inventories.find(x => x.locations?.name === WAREHOUSE_NAME);
+
+      return {
+        part_id: part.id,
+        part_number: part.part_number,
+        description: part.description || '',
+        notes: part.notes || '',
+        vendor: part.vendor || '',
+        vanQty: vanInventory?.quantity_on_hand ?? 0,
+        parQty: vanInventory?.par_quantity ?? 0,
+        warehouseQty: warehouseInventory?.quantity_on_hand ?? 0
+      };
+    }
+
+    async function searchParts() {
+      const term = document.getElementById('searchBox').value.trim();
+      if (!term) {
+        searchMatches = [];
+        renderSearchResults();
+        return;
+      }
+
+      try {
+        setStatus('Searching parts…');
+
+        const [aliasRows, descRows] = await Promise.all([
+          searchByAlias(term),
+          searchByDescription(term)
+        ]);
+
+        const merged = new Map();
+
+        for (const row of aliasRows) {
+          const normalized = normalizePartRecord(row);
+          if (!merged.has(normalized.part_id)) {
+            merged.set(normalized.part_id, normalized);
+          }
+        }
+
+        for (const row of descRows) {
+          const normalized = normalizePartRecord(row);
+          if (!merged.has(normalized.part_id)) {
+            merged.set(normalized.part_id, normalized);
+          }
+        }
+
+        searchMatches = Array.from(merged.values()).slice(0, 8);
+        renderSearchResults();
+        setStatus(searchMatches.length ? 'Ready to select part(s)' : 'No matching parts found');
+      } catch (error) {
+        console.error(error);
+        setStatus(`Search failed: ${error.message}`);
+      }
+    }
+
+    async function submitUsage() {
+      if (!selectedParts.length) {
+        alert('Select at least one part.');
+        return;
+      }
+
+      const total = selectedParts.reduce((sum, p) => sum + Number(p.qty || 0), 0);
+      const msg = total === 1
+        ? `Confirm 1 part was used from ${TECHNICIAN}'s Van?`
+        : `Confirm ${total} parts were used from ${TECHNICIAN}'s Van?`;
+
+      if (!confirm(msg)) return;
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = 'Submitting...';
+
+      try {
+        const { data: txnRows, error: txnError } = await supabase
+          .from('transactions')
+          .insert({
+            transaction_type: 'usage',
+            from_location_id: vanLocationId,
+            technician_name: TECHNICIAN,
+            store_ref: document.getElementById('storeRef').value.trim() || null,
+            notes: document.getElementById('notes').value.trim() || null,
+            created_by: TECHNICIAN
+          })
+          .select('id')
+          .limit(1);
+
+        if (txnError) throw txnError;
+
+        const transactionId = txnRows?.[0]?.id;
+        if (!transactionId) {
+          throw new Error('Transaction was created but no ID was returned.');
+        }
+
+        const lineItems = selectedParts.map(p => ({
+          transaction_id: transactionId,
+          part_id: p.part_id,
+          quantity: Number(p.qty)
+        }));
+
+        const { error: itemError } = await supabase
+          .from('transaction_items')
+          .insert(lineItems);
+
+        if (itemError) throw itemError;
+
+        alert(`Submitted successfully.\nParts written: ${selectedParts.length}`);
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+        alert(`Submission failed:\n${error.message || error}`);
+        btn.disabled = false;
+        updateSubmitButton();
+      }
+    }
+
+    async function init() {
+      try {
+        setStatus('Connecting to Supabase…');
+        await loadLocationIds();
+        setStatus('Ready to search for part(s)');
+      } catch (error) {
+        console.error(error);
+        setStatus(`Startup failed: ${error.message}`);
+      }
+
+      document.getElementById('searchBox').addEventListener('input', searchParts);
+      document.getElementById('submitBtn').addEventListener('click', submitUsage);
+
+      document.addEventListener('click', function(event) {
+        const box = document.getElementById('searchResults');
+        const input = document.getElementById('searchBox');
+
+        if (!box.contains(event.target) && event.target !== input) {
+          box.style.display = 'none';
+        }
+      });
+
+      updateSubmitButton();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
