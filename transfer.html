@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ECSS Transfers</title>
+
+  <style>
+    :root{
+      --navy:#122644;
+      --blue:#2F6FED;
+      --bg:#f1f3f4;
+      --card:#ffffff;
+      --border:#d7e0ea;
+      --text:#15273F;
+      --muted:#5f7084;
+      --green:#198754;
+      --orange:#d67a3c;
+      --battery:#fff7cc;
+      --red:#D8342A;
+      --soft:#eaf1fb;
+      --search-accent:#9fc0ff;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      width:100%;
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial,sans-serif;
+      -webkit-text-size-adjust:100%;
+    }
+
+    *{ box-sizing:border-box; }
+
+    .header{
+      background:var(--navy);
+      color:white;
+      padding:14px;
+      text-align:center;
+    }
+
+    .header-title{
+      font-size:26px;
+      font-weight:900;
+    }
+
+    .header-sub{
+      background:var(--blue);
+      padding:10px;
+      border-radius:12px;
+      margin-top:10px;
+      font-weight:900;
+    }
+
+    .status{
+      font-size:13px;
+      margin-top:6px;
+      color:#d7dfeb;
+      min-height:18px;
+    }
+
+    .container{
+      max-width:760px;
+      margin:auto;
+      padding:14px;
+    }
+
+    .back{
+      display:block;
+      background:white;
+      border:1px solid var(--border);
+      padding:12px;
+      border-radius:12px;
+      text-align:center;
+      font-weight:900;
+      text-decoration:none;
+      color:var(--text);
+      margin-bottom:14px;
+    }
+
+    .counts{
+      text-align:center;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .section{
+      background:white;
+      border-radius:16px;
+      border:1px solid var(--border);
+      padding:12px;
+      margin-bottom:16px;
+    }
+
+    .section.restock{
+      border-top:5px solid var(--blue);
+    }
+
+    .section.remove{
+      border-top:5px solid var(--orange);
+    }
+
+    .section.manual{
+      border-top:5px solid #6f42c1;
+    }
+
+    .title{
+      font-size:20px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .subtitle{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:10px;
+      line-height:1.35;
+    }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:10px;
+      background:white;
+      transition:background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .card.battery{
+      background:var(--battery);
+      border-color:#e7cf63;
+    }
+
+    .card.selected{
+      background:#eaf3ff;
+      border-color:#8eb8ff;
+      box-shadow:0 0 0 3px rgba(47,111,237,0.10);
+    }
+
+    .card.remove.selected{
+      background:#fff1ea;
+      border-color:#e2a37a;
+      box-shadow:0 0 0 3px rgba(214,122,60,0.10);
+    }
+
+    .part-title{
+      font-weight:900;
+      font-size:17px;
+      line-height:1.25;
+      margin-bottom:4px;
+    }
+
+    .meta{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:2px;
+      line-height:1.35;
+    }
+
+    .pills{
+      margin-top:8px;
+      margin-bottom:8px;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      margin-right:5px;
+      margin-top:4px;
+      background:var(--soft);
+    }
+
+    .pill.restock{background:#e8f5ee;color:var(--green)}
+    .pill.remove{background:#fff4e5;color:#b26a00}
+    .pill.battery{background:#fff3cd;color:#7a5a00}
+
+    .qty{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    .qty-control{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .qty button{
+      width:42px;
+      height:42px;
+      font-size:26px;
+      font-weight:900;
+      line-height:1;
+      background:var(--blue);
+      color:white;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .qty input{
+      width:70px;
+      text-align:center;
+      font-size:18px;
+      font-weight:900;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:8px;
+      background:white;
+    }
+
+    .search{
+      margin-top:8px;
+    }
+
+    .search input{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:2px solid var(--search-accent);
+      box-shadow:0 0 0 3px rgba(47,111,237,0.08);
+      font-size:16px;
+      background:white;
+    }
+
+    .results{
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-top:6px;
+      display:none;
+      background:white;
+      overflow:hidden;
+      max-height:320px;
+      overflow-y:auto;
+    }
+
+    .result{
+      padding:10px;
+      border-bottom:1px solid #edf2f7;
+      cursor:pointer;
+    }
+
+    .result:last-child{border-bottom:none}
+
+    .result-title{
+      font-weight:900;
+      font-size:15px;
+    }
+
+    .result-desc{
+      font-size:14px;
+      margin-top:2px;
+    }
+
+    .result-meta{
+      font-size:12px;
+      color:#666;
+      margin-top:4px;
+      line-height:1.35;
+    }
+
+    .manual{
+      background:#f8fbff;
+      border:1px solid #cfe0ff;
+      border-radius:12px;
+      padding:10px;
+      margin-top:8px;
+    }
+
+    .manual.battery{
+      background:var(--battery);
+      border-color:#e7cf63;
+    }
+
+    .remove-btn{
+      margin-top:10px;
+      width:100%;
+      background:white;
+      color:var(--red);
+      border:1px solid #efc1bc;
+      border-radius:12px;
+      padding:11px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .notes-wrap{
+      margin-top:14px;
+      margin-bottom:14px;
+    }
+
+    .notes-wrap textarea{
+      width:100%;
+      min-height:84px;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:16px;
+      background:white;
+      resize:vertical;
+    }
+
+    .submit{
+      position:sticky;
+      bottom:0;
+      background:linear-gradient(to top,var(--bg) 70%,transparent);
+      padding:10px;
+    }
+
+    .submit button{
+      width:100%;
+      background:var(--blue);
+      color:white;
+      border:none;
+      padding:14px;
+      font-size:18px;
+      font-weight:900;
+      border-radius:14px;
+      cursor:pointer;
+    }
+
+    .submit button:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="header-title">ECSS INVENTORY</div>
+  <div class="header-sub" id="pageSubtitle">Transfers</div>
+  <div class="status" id="statusMessage">Connecting to Supabase…</div>
+</div>
+
+<div class="container">
+
+  <a class="back" id="backLink" href="index.html">← Back to Menu</a>
+
+  <div id="counts" class="counts"></div>
+
+  <div class="section restock">
+    <div class="title">To Van</div>
+    <div class="subtitle">Items currently below par.</div>
+    <div id="restockList"></div>
+  </div>
+
+  <div class="section remove">
+    <div class="title">To Warehouse</div>
+    <div class="subtitle">Items currently above par.</div>
+    <div id="removeList"></div>
+  </div>
+
+  <div class="section manual">
+    <div class="title">Add / Remove</div>
+
+    <div class="search">
+      <input id="searchBox" placeholder="Search part number / description">
+      <div id="searchResults" class="results"></div>
+    </div>
+
+    <div id="manualCards"></div>
+  </div>
+
+  <div class="notes-wrap">
+    <div class="title" style="font-size:18px; margin-bottom:8px;">Notes</div>
+    <textarea id="notes" placeholder="Optional"></textarea>
+  </div>
+
+</div>
+
+<div class="submit">
+  <button id="submitBtn">Submit Transfer</button>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const SUPABASE_URL = 'https://ddpswufhwzljjoqsxazh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcHN3dWZod3psampvcXN4YXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzcwMTQsImV4cCI6MjA4OTg1MzAxNH0.I8nzAlkmCNgVQmtDFPFVoUxlmrxFneQQLk8gHh3v2II';
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const TECH_CONFIG = {
+    derrick: { technician: 'Derrick', vanName: 'Derrick Van' },
+    joe: { technician: 'Joe', vanName: 'Joe Van' },
+    sarwat: { technician: 'Sarwat', vanName: 'Sarwat Van' },
+    sean: { technician: 'Sean', vanName: 'Sean Van' },
+    vinny: { technician: 'Vinny', vanName: 'Vinny Van' }
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const techKey = (params.get('tech') || 'derrick').toLowerCase();
+  const activeTech = TECH_CONFIG[techKey] || TECH_CONFIG.derrick;
+
+  const TECHNICIAN = activeTech.technician;
+  const VAN_NAME = activeTech.vanName;
+  const WAREHOUSE_NAME = 'Warehouse';
+
+  let uiData = [];
+  let manualParts = [];
+  let searchMatches = [];
+  let searchRequestId = 0;
+  let searchDebounceTimer = null;
+  let vanLocationId = null;
+  let warehouseLocationId = null;
+
+  function setStatus(text){
+    document.getElementById('statusMessage').innerText = text;
+  }
+
+  function isBattery(partNumber, desc){
+    const blob = `${partNumber || ''} ${desc || ''}`.toLowerCase();
+    return blob.includes('battery');
+  }
+
+  function getDisplayLabel(partNumber, description){
+    return isBattery(partNumber, description)
+      ? `⚡ ${partNumber}`
+      : `${partNumber} — ${description}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function updateSubmitButton(){
+    const parts = gatherSelectedParts();
+    const toVan = parts.filter(p => p.action === 'RESTOCK').length;
+    const toWarehouse = parts.filter(p => p.action === 'REMOVE').length;
+    const btn = document.getElementById('submitBtn');
+
+    if (!parts.length) {
+      btn.innerText = 'Submit Transfer';
+      return;
+    }
+
+    btn.innerText = `Submit Transfer: ${toVan} to Van | ${toWarehouse} to Warehouse`;
+  }
+
+  function getPriorityValue(row){
+    const n = Number(row.suggested_qty || 0);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function sortTransferRows(rows){
+    return rows.slice().sort((a, b) => {
+      const aNeed = Math.abs(getPriorityValue(a));
+      const bNeed = Math.abs(getPriorityValue(b));
+      if (aNeed !== bNeed) return bNeed - aNeed;
+      return String(a.part_number || '').localeCompare(String(b.part_number || ''));
+    });
+  }
+
+  function buildCard(row, index, type){
+    const batteryClass = isBattery(row.part_number, row.description) ? 'battery' : '';
+    const label = getDisplayLabel(row.part_number, row.description);
+
+    return `
+      <div class="card ${type} ${batteryClass}" id="${type}_${index}">
+        <div class="part-title">${escapeHtml(label)}</div>
+        <div class="meta">Manufacturer: ${escapeHtml(row.vendor || '—')}</div>
+        <div class="meta">Model: ${escapeHtml(row.model || '—')}</div>
+        <div class="meta">AKA: ${escapeHtml(row.aka || '—')}</div>
+        <div class="meta">Spec: ${escapeHtml(row.spec || '—')}</div>
+
+        <div class="pills">
+          <span class="pill">Warehouse: ${escapeHtml(row.warehouse_qty)}</span>
+          <span class="pill">Van: ${escapeHtml(row.van_qty)}</span>
+          <span class="pill">Par: ${escapeHtml(row.par_qty)}</span>
+          <span class="pill ${type === 'restock' ? 'restock' : 'remove'}">${type === 'restock' ? 'RESTOCK' : 'REMOVE'}</span>
+          ${isBattery(row.part_number, row.description) ? '<span class="pill battery">⚡ Battery</span>' : ''}
+        </div>
+
+        <div class="qty">
+          <input type="checkbox" data-type="${type}" data-index="${index}">
+          <div class="qty-control">
+            <button type="button" data-action="minus" data-id="${type}_qty_${index}">−</button>
+            <input id="${type}_qty_${index}" value="${Math.max(1, Math.abs(Number(row.suggested_qty || 1)))}">
+            <button type="button" data-action="plus" data-id="${type}_qty_${index}">+</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function render(){
+    const restock = sortTransferRows(uiData.filter(r => r.action === 'RESTOCK'));
+    const remove = sortTransferRows(uiData.filter(r => r.action === 'REMOVE'));
+
+    document.getElementById('counts').innerText =
+      `${restock.length} parts to Van | ${remove.length} parts to Warehouse`;
+
+    document.getElementById('restockList').innerHTML =
+      restock.map((r, i) => buildCard(r, i, 'restock')).join('');
+
+    document.getElementById('removeList').innerHTML =
+      remove.map((r, i) => buildCard(r, i, 'remove')).join('');
+
+    document.querySelectorAll('input[type="checkbox"]').forEach(box => {
+      box.addEventListener('change', () => {
+        const card = document.getElementById(`${box.dataset.type}_${box.dataset.index}`);
+        if (card) card.classList.toggle('selected', box.checked);
+        updateSubmitButton();
+      });
+    });
+
+    document.querySelectorAll('[data-action="minus"]').forEach(btn => {
+      btn.addEventListener('click', () => changeQty(btn.dataset.id, -1));
+    });
+
+    document.querySelectorAll('[data-action="plus"]').forEach(btn => {
+      btn.addEventListener('click', () => changeQty(btn.dataset.id, 1));
+    });
+
+    document.querySelectorAll('#restockList input[id^="restock_qty_"], #removeList input[id^="remove_qty_"]').forEach(input => {
+      input.addEventListener('change', updateSubmitButton);
+    });
+
+    updateSubmitButton();
+  }
+
+  function changeQty(id, d){
+    const el = document.getElementById(id);
+    let v = parseInt(el.value || 0, 10) + d;
+    if (v < 0) v = 0;
+    el.value = v;
+    updateSubmitButton();
+  }
+
+  async function loadLocationIds() {
+    const { data, error } = await supabase
+      .from('locations')
+      .select('id, name')
+      .in('name', [VAN_NAME, WAREHOUSE_NAME]);
+
+    if (error) throw error;
+
+    vanLocationId = data.find(x => x.name === VAN_NAME)?.id ?? null;
+    warehouseLocationId = data.find(x => x.name === WAREHOUSE_NAME)?.id ?? null;
+
+    if (!vanLocationId || !warehouseLocationId) {
+      throw new Error('Could not find required locations.');
+    }
+  }
+
+  async function loadTransferSuggestions() {
+    const { data, error } = await supabase.rpc('search_parts_for_usage', {
+      search_text: '',
+      van_location_name: VAN_NAME,
+      warehouse_location_name: WAREHOUSE_NAME
+    });
+
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+
+    uiData = rows.flatMap(r => {
+      const items = [];
+      const vanQty = Number(r.van_qty || 0);
+      const parQty = Number(r.par_qty || 0);
+
+      if (vanQty < parQty) {
+        items.push({
+          ...r,
+          action: 'RESTOCK',
+          suggested_qty: parQty - vanQty
+        });
+      }
+
+      if (vanQty > parQty) {
+        items.push({
+          ...r,
+          action: 'REMOVE',
+          suggested_qty: vanQty - parQty
+        });
+      }
+
+      return items;
+    });
+  }
+
+  async function searchParts(){
+    const term = document.getElementById('searchBox').value.trim();
+    const box = document.getElementById('searchResults');
+
+    clearTimeout(searchDebounceTimer);
+
+    if (!term){
+      box.style.display = 'none';
+      box.innerHTML = '';
+      return;
+    }
+
+    searchDebounceTimer = setTimeout(async () => {
+      const requestId = ++searchRequestId;
+
+      try {
+        setStatus('Searching parts…');
+
+        const { data, error } = await supabase.rpc('search_parts_for_usage', {
+          search_text: term,
+          van_location_name: VAN_NAME,
+          warehouse_location_name: WAREHOUSE_NAME
+        });
+
+        if (requestId !== searchRequestId) return;
+        if (error) throw error;
+
+        searchMatches = Array.isArray(data) ? data.slice(0, 8) : [];
+
+        if (!searchMatches.length){
+          box.style.display = 'none';
+          box.innerHTML = '';
+          setStatus('No matching parts found');
+          return;
+        }
+
+        box.innerHTML = searchMatches.map((p, i) => `
+          <div class="result" data-index="${i}">
+            <div class="result-title">${escapeHtml(p.part_number)}</div>
+            <div class="result-desc">${escapeHtml(p.description || '')}</div>
+            <div class="result-meta">
+              Manufacturer: ${escapeHtml(p.vendor || '—')}<br>
+              Model: ${escapeHtml(p.model || '—')} | AKA: ${escapeHtml(p.aka || '—')}<br>
+              Warehouse: ${escapeHtml(p.warehouse_qty)} | Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
+            </div>
+          </div>
+        `).join('');
+
+        box.style.display = 'block';
+
+        [...box.querySelectorAll('.result')].forEach(el => {
+          el.addEventListener('click', () => addManual(Number(el.dataset.index)));
+        });
+
+        setStatus('Ready to select part(s)');
+      } catch (error) {
+        if (requestId !== searchRequestId) return;
+        console.error(error);
+        setStatus(`Search failed: ${error.message}`);
+      }
+    }, 200);
+  }
+
+  function addManual(i){
+    const p = searchMatches[i];
+    if (!p) return;
+
+    manualParts.unshift({
+      ...p,
+      qty: 1,
+      action: 'RESTOCK'
+    });
+
+    renderManual();
+
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('searchBox').value = '';
+    setStatus('Ready to search for part(s)');
+  }
+
+  function renderManual(){
+    const html = manualParts.map((p, i) => `
+      <div class="card manual ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
+        <div class="part-title">${escapeHtml(getDisplayLabel(p.part_number, p.description))}</div>
+        <div class="meta">Manufacturer: ${escapeHtml(p.vendor || '—')}</div>
+        <div class="meta">Model: ${escapeHtml(p.model || '—')}</div>
+        <div class="meta">AKA: ${escapeHtml(p.aka || '—')}</div>
+        <div class="meta">Spec: ${escapeHtml(p.spec || '—')}</div>
+
+        <div class="pills">
+          <span class="pill">Warehouse: ${escapeHtml(p.warehouse_qty)}</span>
+          <span class="pill">Van: ${escapeHtml(p.van_qty)}</span>
+          <span class="pill">Par: ${escapeHtml(p.par_qty)}</span>
+          <span class="pill ${p.action === 'RESTOCK' ? 'restock' : 'remove'}">${p.action === 'RESTOCK' ? 'RESTOCK' : 'REMOVE'}</span>
+          ${isBattery(p.part_number, p.description) ? '<span class="pill battery">⚡ Battery</span>' : ''}
+        </div>
+
+        <div style="margin-top:10px;">
+          <select data-action="manual-select" data-index="${i}">
+            <option value="RESTOCK" ${p.action === 'RESTOCK' ? 'selected' : ''}>To Van</option>
+            <option value="REMOVE" ${p.action === 'REMOVE' ? 'selected' : ''}>To Warehouse</option>
+          </select>
+        </div>
+
+        <div class="qty">
+          <div class="qty-control">
+            <button type="button" data-action="manual-minus" data-id="manual_${i}">−</button>
+            <input id="manual_${i}" value="${escapeHtml(p.qty)}">
+            <button type="button" data-action="manual-plus" data-id="manual_${i}">+</button>
+          </div>
+        </div>
+
+        <button class="remove-btn" data-action="manual-remove" data-index="${i}">Remove Added Part</button>
+      </div>
+    `).join('');
+
+    document.getElementById('manualCards').innerHTML = html;
+
+    document.querySelectorAll('[data-action="manual-select"]').forEach(sel => {
+      sel.addEventListener('change', () => {
+        manualParts[Number(sel.dataset.index)].action = sel.value;
+        renderManual();
+      });
+    });
+
+    document.querySelectorAll('[data-action="manual-minus"]').forEach(btn => {
+      btn.addEventListener('click', () => changeQty(btn.dataset.id, -1));
+    });
+
+    document.querySelectorAll('[data-action="manual-plus"]').forEach(btn => {
+      btn.addEventListener('click', () => changeQty(btn.dataset.id, 1));
+    });
+
+    document.querySelectorAll('[id^="manual_"]').forEach(input => {
+      input.addEventListener('change', updateSubmitButton);
+    });
+
+    document.querySelectorAll('[data-action="manual-remove"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        manualParts.splice(Number(btn.dataset.index), 1);
+        renderManual();
+      });
+    });
+
+    updateSubmitButton();
+  }
+
+  function gatherSelectedParts(){
+    const parts = [];
+
+    const restock = sortTransferRows(uiData.filter(r => r.action === 'RESTOCK'));
+    const remove = sortTransferRows(uiData.filter(r => r.action === 'REMOVE'));
+
+    restock.forEach((row, i) => {
+      const card = document.getElementById(`restock_${i}`);
+      const checkbox = card ? card.querySelector('input[type="checkbox"]') : null;
+      const qtyEl = document.getElementById(`restock_qty_${i}`);
+      const qty = Number(qtyEl ? qtyEl.value : 0);
+
+      if (checkbox && checkbox.checked && qty > 0) {
+        parts.push({
+          part_id: row.part_id,
+          part_number: row.part_number,
+          description: row.description,
+          qty,
+          action: 'RESTOCK'
+        });
+      }
+    });
+
+    remove.forEach((row, i) => {
+      const card = document.getElementById(`remove_${i}`);
+      const checkbox = card ? card.querySelector('input[type="checkbox"]') : null;
+      const qtyEl = document.getElementById(`remove_qty_${i}`);
+      const qty = Number(qtyEl ? qtyEl.value : 0);
+
+      if (checkbox && checkbox.checked && qty > 0) {
+        parts.push({
+          part_id: row.part_id,
+          part_number: row.part_number,
+          description: row.description,
+          qty,
+          action: 'REMOVE'
+        });
+      }
+    });
+
+    manualParts.forEach((p, i) => {
+      const qtyEl = document.getElementById(`manual_${i}`);
+      const qty = Number(qtyEl ? qtyEl.value : p.qty || 0);
+
+      if (qty > 0) {
+        parts.push({
+          part_id: p.part_id,
+          part_number: p.part_number,
+          description: p.description,
+          qty,
+          action: p.action || 'RESTOCK'
+        });
+      }
+    });
+
+    return parts;
+  }
+
+  async function submitRequest(){
+    const parts = gatherSelectedParts();
+
+    if (!parts.length) {
+      alert('Please select at least one transfer item.');
+      return;
+    }
+
+    const restockParts = parts.filter(p => p.action === 'RESTOCK');
+    const removeParts = parts.filter(p => p.action === 'REMOVE');
+
+    const msg = `Confirm transfer submission?\n\nTo Van: ${restockParts.length}\nTo Warehouse: ${removeParts.length}`;
+    if (!confirm(msg)) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerText = 'Submitting...';
+
+    try {
+      if (restockParts.length) {
+        const { data: txnRows, error: txnError } = await supabase
+          .from('transactions')
+          .insert({
+            transaction_type: 'transfer',
+            from_location_id: warehouseLocationId,
+            to_location_id: vanLocationId,
+            technician_name: TECHNICIAN,
+            notes: document.getElementById('notes').value.trim() || null,
+            created_by: TECHNICIAN
+          })
+          .select('id')
+          .limit(1);
+
+        if (txnError) throw txnError;
+
+        const transactionId = txnRows?.[0]?.id;
+        if (!transactionId) throw new Error('No transaction ID returned for restock.');
+
+        const lineItems = restockParts.map(p => ({
+          transaction_id: transactionId,
+          part_id: p.part_id,
+          quantity: Number(p.qty)
+        }));
+
+        const { error: itemError } = await supabase
+          .from('transaction_items')
+          .insert(lineItems);
+
+        if (itemError) throw itemError;
+      }
+
+      if (removeParts.length) {
+        const { data: txnRows, error: txnError } = await supabase
+          .from('transactions')
+          .insert({
+            transaction_type: 'transfer',
+            from_location_id: vanLocationId,
+            to_location_id: warehouseLocationId,
+            technician_name: TECHNICIAN,
+            notes: document.getElementById('notes').value.trim() || null,
+            created_by: TECHNICIAN
+          })
+          .select('id')
+          .limit(1);
+
+        if (txnError) throw txnError;
+
+        const transactionId = txnRows?.[0]?.id;
+        if (!transactionId) throw new Error('No transaction ID returned for warehouse return.');
+
+        const lineItems = removeParts.map(p => ({
+          transaction_id: transactionId,
+          part_id: p.part_id,
+          quantity: Number(p.qty)
+        }));
+
+        const { error: itemError } = await supabase
+          .from('transaction_items')
+          .insert(lineItems);
+
+        if (itemError) throw itemError;
+      }
+
+      alert(`Submitted successfully.\nTransfer rows written: ${parts.length}`);
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      alert(`Submission failed:\n${error.message || error}`);
+      btn.disabled = false;
+      updateSubmitButton();
+    }
+  }
+
+  async function init(){
+    document.title = `ECSS Transfers - ${TECHNICIAN}`;
+    document.getElementById('pageSubtitle').innerText = `${TECHNICIAN} — Transfers`;
+    document.getElementById('backLink').href = `index.html?tech=${encodeURIComponent(techKey)}`;
+
+    try {
+      setStatus('Connecting to Supabase…');
+      await loadLocationIds();
+      await loadTransferSuggestions();
+      render();
+      setStatus('Ready to search for part(s)');
+    } catch (error) {
+      console.error(error);
+      setStatus(`Startup failed: ${error.message}`);
+    }
+
+    document.getElementById('searchBox').addEventListener('input', searchParts);
+    document.getElementById('submitBtn').addEventListener('click', submitRequest);
+
+    document.addEventListener('click', function(event){
+      const box = document.getElementById('searchResults');
+      const input = document.getElementById('searchBox');
+
+      if (!box.contains(event.target) && event.target !== input) {
+        box.style.display = 'none';
+      }
+    });
+
+    updateSubmitButton();
+  }
+
+  window.onload = init;
+</script>
+
+</body>
+</html>
