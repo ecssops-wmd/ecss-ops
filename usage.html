@@ -87,7 +87,7 @@
       margin-bottom:10px;
     }
 
-    input,textarea{
+    input,textarea,select{
       width:100%;
       padding:12px;
       border-radius:10px;
@@ -245,6 +245,10 @@
       font-weight:900;
     }
 
+    .field-top{
+      margin-top:10px;
+    }
+
     .remove-btn{
       margin-top:10px;
       width:100%;
@@ -353,6 +357,10 @@
       return blob.includes('battery');
     }
 
+    function getDefaultReturnType(part) {
+      return isBattery(part.part_number, part.description) ? 'CORE' : 'NONE';
+    }
+
     function getDisplayLabel(part) {
       if (isBattery(part.part_number, part.description)) {
         return `⚡ ${part.part_number} — ${part.description}`;
@@ -435,7 +443,8 @@
           warehouseQty: p.warehouse_qty,
           vanQty: p.van_qty,
           parQty: p.par_qty,
-          qty: 1
+          qty: 1,
+          returnType: getDefaultReturnType(p)
         });
       }
 
@@ -473,6 +482,15 @@
             </div>
           </div>
 
+          <div class="field-top">
+            <select data-action="return-type" data-index="${i}">
+              <option value="NONE" ${p.returnType === 'NONE' ? 'selected' : ''}>No Return</option>
+              <option value="CORE" ${p.returnType === 'CORE' ? 'selected' : ''}>Core Return</option>
+              <option value="WARRANTY" ${p.returnType === 'WARRANTY' ? 'selected' : ''}>Warranty Return</option>
+              <option value="DEFECTIVE" ${p.returnType === 'DEFECTIVE' ? 'selected' : ''}>Defective Return</option>
+            </select>
+          </div>
+
           <button class="remove-btn" data-action="remove" data-index="${i}">Remove Part</button>
         </div>
       `).join('');
@@ -493,6 +511,10 @@
         input.addEventListener('change', () => setQty(Number(input.dataset.index), input.value));
       });
 
+      container.querySelectorAll('[data-action="return-type"]').forEach(select => {
+        select.addEventListener('change', () => setReturnType(Number(select.dataset.index), select.value));
+      });
+
       updateSubmitButton();
     }
 
@@ -504,6 +526,10 @@
     function setQty(index, value) {
       selectedParts[index].qty = Math.max(1, Number(value || 1));
       renderSelectedParts();
+    }
+
+    function setReturnType(index, value) {
+      selectedParts[index].returnType = value;
     }
 
     function removePart(index) {
@@ -614,6 +640,13 @@
           .insert(lineItems);
 
         if (itemError) throw itemError;
+
+        console.log('Return flags submitted with usage:', selectedParts.map(p => ({
+          part_id: p.part_id,
+          part_number: p.part_number,
+          quantity: p.qty,
+          return_type: p.returnType
+        })));
 
         alert(`Submitted successfully.\nParts written: ${selectedParts.length}`);
         window.location.reload();
