@@ -291,11 +291,20 @@
       return blob.includes('battery');
     }
 
-    function getDisplayLabel(p){
-      if (isBattery(p.part_number, p.description)) {
-        return `⚡ ${p.part_number} — ${p.description}`;
+    function getDisplayTitle(p){
+      let title = p.part_number || '';
+      if (p.matched_number && p.matched_number.toLowerCase() !== String(p.part_number || '').toLowerCase()) {
+        title += ` (matched: ${p.matched_number})`;
       }
-      return `${p.part_number} — ${p.description}`;
+      return title;
+    }
+
+    function getDisplayLabel(p){
+      const title = getDisplayTitle(p);
+      if (isBattery(p.part_number, p.description)) {
+        return `⚡ ${title} — ${p.description || ''}`;
+      }
+      return `${title} — ${p.description || ''}`;
     }
 
     function escapeHtml(value) {
@@ -318,10 +327,11 @@
 
       box.innerHTML = searchMatches.map((p, i) => `
         <div class="search-item" data-index="${i}">
-          <div class="search-title">${escapeHtml(p.part_number)}</div>
+          <div class="search-title">${escapeHtml(getDisplayTitle(p))}</div>
           <div class="search-desc">${escapeHtml(p.description || '')}</div>
           <div class="search-meta">
-            Manufacturer: ${escapeHtml(p.vendor || '—')}<br>
+            Manufacturer: ${escapeHtml(p.manufacturer || '—')}<br>
+            Vendor Item ID: ${escapeHtml(p.vendor_item_id || '—')}<br>
             Model: ${escapeHtml(p.model || '—')} | AKA: ${escapeHtml(p.aka || '—')}<br>
             Spec: ${escapeHtml(p.spec || '—')}<br>
             Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
@@ -352,7 +362,9 @@
         part_id: p.part_id,
         part_number: p.part_number,
         description: p.description,
-        vendor: p.vendor,
+        manufacturer: p.manufacturer,
+        vendor_item_id: p.vendor_item_id,
+        matched_number: p.matched_number,
         model: p.model,
         aka: p.aka,
         spec: p.spec,
@@ -378,7 +390,8 @@
         <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
           <div class="title2">${escapeHtml(getDisplayLabel(p))}</div>
 
-          <div class="meta">Manufacturer: ${escapeHtml(p.vendor || '—')}</div>
+          <div class="meta">Manufacturer: ${escapeHtml(p.manufacturer || '—')}</div>
+          <div class="meta">Vendor Item ID: ${escapeHtml(p.vendor_item_id || '—')}</div>
           <div class="meta">Model: ${escapeHtml(p.model || '—')}</div>
           <div class="meta">AKA: ${escapeHtml(p.aka || '—')}</div>
           <div class="meta">Spec: ${escapeHtml(p.spec || '—')}</div>
