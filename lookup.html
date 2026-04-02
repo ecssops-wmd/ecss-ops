@@ -234,7 +234,7 @@
     <a class="back" id="backLink" href="index.html">← Back to Menu</a>
 
     <div class="section">Search Part</div>
-    <input id="searchBox" class="search-input" placeholder="Search part number, description, manufacturer, model, AKA, or spec">
+    <input id="searchBox" class="search-input" placeholder="Search part number, description, or related manufacturer part number">
     <div id="searchResults" class="search-results"></div>
 
     <div class="helper">
@@ -292,11 +292,7 @@
     }
 
     function getDisplayTitle(p){
-      let title = p.part_number || '';
-      if (p.matched_number && p.matched_number.toLowerCase() !== String(p.part_number || '').toLowerCase()) {
-        title += ` (matched: ${p.matched_number})`;
-      }
-      return title;
+      return p.part_number || '';
     }
 
     function getDisplayLabel(p){
@@ -327,13 +323,11 @@
 
       box.innerHTML = searchMatches.map((p, i) => `
         <div class="search-item" data-index="${i}">
-          <div class="search-title">${escapeHtml(getDisplayTitle(p))}</div>
+          <div class="search-title">${escapeHtml(p.part_number)}</div>
           <div class="search-desc">${escapeHtml(p.description || '')}</div>
           <div class="search-meta">
-            Manufacturer: ${escapeHtml(p.manufacturer || '—')}<br>
-            Vendor Item ID: ${escapeHtml(p.vendor_item_id || '—')}<br>
-            Model: ${escapeHtml(p.model || '—')} | AKA: ${escapeHtml(p.aka || '—')}<br>
-            Spec: ${escapeHtml(p.spec || '—')}<br>
+            ${p.matched_alias ? `Matched: ${escapeHtml(p.matched_alias)}<br>` : ''}
+            ${p.matched_manufacturers ? `Manufactor: ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
             Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
           </div>
         </div>
@@ -362,12 +356,8 @@
         part_id: p.part_id,
         part_number: p.part_number,
         description: p.description,
-        manufacturer: p.manufacturer,
-        vendor_item_id: p.vendor_item_id,
-        matched_number: p.matched_number,
-        model: p.model,
-        aka: p.aka,
-        spec: p.spec,
+        matched_alias: p.matched_alias,
+        matched_manufacturers: p.matched_manufacturers,
         warehouseQty: p.warehouse_qty,
         myVanQty: p.van_qty,
         parQty: p.par_qty
@@ -388,13 +378,10 @@
 
       list.innerHTML = selectedParts.map((p, i) => `
         <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
-          <div class="title2">${escapeHtml(getDisplayLabel(p))}</div>
+          <div class="title2">${escapeHtml(p.part_number)} — ${escapeHtml(p.description || '')}</div>
 
-          <div class="meta">Manufacturer: ${escapeHtml(p.manufacturer || '—')}</div>
-          <div class="meta">Vendor Item ID: ${escapeHtml(p.vendor_item_id || '—')}</div>
-          <div class="meta">Model: ${escapeHtml(p.model || '—')}</div>
-          <div class="meta">AKA: ${escapeHtml(p.aka || '—')}</div>
-          <div class="meta">Spec: ${escapeHtml(p.spec || '—')}</div>
+          ${p.matched_alias ? `<div class="meta">Matched: ${escapeHtml(p.matched_alias)}</div>` : ''}
+          ${p.matched_manufacturers ? `<div class="meta">Manufactor: ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
 
           <div class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</div>
           <div class="pill">My Van: ${escapeHtml(p.myVanQty)}</div>
