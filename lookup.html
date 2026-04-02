@@ -292,6 +292,12 @@
     }
 
     function getDisplayTitle(p){
+      const desc = String(p.description || '').toLowerCase();
+
+      if (desc === 'battery cable' && p.matched_alias) {
+        return p.matched_alias;
+      }
+
       return p.part_number || '';
     }
 
@@ -323,11 +329,11 @@
 
       box.innerHTML = searchMatches.map((p, i) => `
         <div class="search-item" data-index="${i}">
-          <div class="search-title">${escapeHtml(p.part_number)}</div>
+          <div class="search-title">${escapeHtml(getDisplayTitle(p))}</div>
           <div class="search-desc">${escapeHtml(p.description || '')}</div>
           <div class="search-meta">
             ${p.matched_alias ? `Matched: ${escapeHtml(p.matched_alias)}<br>` : ''}
-            ${p.matched_manufacturers ? `Manufactor: ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
+            ${p.matched_manufacturers ? `Manufacturer: ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
             Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
           </div>
         </div>
@@ -378,10 +384,10 @@
 
       list.innerHTML = selectedParts.map((p, i) => `
         <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
-          <div class="title2">${escapeHtml(p.part_number)} — ${escapeHtml(p.description || '')}</div>
+          <div class="title2">${escapeHtml(getDisplayTitle(p))} — ${escapeHtml(p.description || '')}</div>
 
           ${p.matched_alias ? `<div class="meta">Matched: ${escapeHtml(p.matched_alias)}</div>` : ''}
-          ${p.matched_manufacturers ? `<div class="meta">Manufactor: ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
+          ${p.matched_manufacturers ? `<div class="meta">Manufacturer: ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
 
           <div class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</div>
           <div class="pill">My Van: ${escapeHtml(p.myVanQty)}</div>
