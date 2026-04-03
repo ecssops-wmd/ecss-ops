@@ -108,7 +108,7 @@
     }
 
     .search-item{
-      padding:10px;
+      padding:12px;
       border-bottom:1px solid #eee;
       cursor:pointer;
     }
@@ -119,20 +119,22 @@
 
     .search-title{
       font-weight:900;
-      font-size:16px;
+      font-size:18px;
       line-height:1.25;
+      color:var(--text);
     }
 
     .search-desc{
-      font-size:14px;
+      font-size:15px;
       margin-top:2px;
+      color:var(--text);
     }
 
     .search-meta{
       font-size:12px;
       color:#666;
-      margin-top:4px;
-      line-height:1.35;
+      margin-top:5px;
+      line-height:1.4;
     }
 
     .list-wrap{
@@ -164,49 +166,52 @@
 
     .card{
       background:white;
-      padding:12px;
-      border-radius:12px;
+      padding:14px;
+      border-radius:16px;
       margin-top:10px;
       border:1px solid var(--border);
+      box-shadow:0 1px 2px rgba(0,0,0,0.04);
     }
 
     .card.battery{
       background:var(--battery);
       border-color:#e7cf63;
+      box-shadow:0 1px 2px rgba(0,0,0,0.04);
     }
 
     .title2{
       font-weight:900;
-      font-size:16px;
-      line-height:1.3;
+      font-size:22px;
+      line-height:1.25;
+      color:var(--text);
     }
 
     .meta{
       font-size:13px;
       color:var(--muted);
-      margin-top:3px;
-      line-height:1.35;
+      margin-top:4px;
+      line-height:1.45;
     }
 
     .pill{
       display:inline-block;
-      padding:4px 8px;
+      padding:5px 10px;
       border-radius:999px;
       background:var(--soft);
       font-size:12px;
       font-weight:800;
-      margin-top:6px;
-      margin-right:5px;
+      margin-top:8px;
+      margin-right:6px;
     }
 
     .remove-btn{
-      margin-top:10px;
+      margin-top:12px;
       width:100%;
       background:white;
       color:var(--remove);
       border:1px solid #efc1bc;
       border-radius:12px;
-      padding:10px;
+      padding:12px;
       font-weight:900;
       cursor:pointer;
     }
@@ -234,7 +239,7 @@
     <a class="back" id="backLink" href="index.html">← Back to Menu</a>
 
     <div class="section">Search Part</div>
-    <input id="searchBox" class="search-input" placeholder="Search part number, description, or related manufacturer part number">
+    <input id="searchBox" class="search-input" placeholder="Search part number, description, manufacturer, model, AKA, spec, application, or old number">
     <div id="searchResults" class="search-results"></div>
 
     <div class="helper">
@@ -309,6 +314,18 @@
       return `${title} — ${p.description || ''}`;
     }
 
+    function buildDetailLine(p){
+      const parts = [];
+
+      if (p.manufacturer) parts.push(`Manufacturer ${p.manufacturer}`);
+      if (p.model) parts.push(`Model ${p.model}`);
+      if (p.aka) parts.push(`AKA ${p.aka}`);
+      if (p.spec) parts.push(`Spec ${p.spec}`);
+      if (p.application) parts.push(`Application ${p.application}`);
+
+      return parts.join(' | ');
+    }
+
     function escapeHtml(value) {
       return String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -327,17 +344,24 @@
         return;
       }
 
-      box.innerHTML = searchMatches.map((p, i) => `
-        <div class="search-item" data-index="${i}">
-          <div class="search-title">${escapeHtml(getDisplayTitle(p))}</div>
-          <div class="search-desc">${escapeHtml(p.description || '')}</div>
-          <div class="search-meta">
-            ${p.matched_alias ? `Matched: ${escapeHtml(p.matched_alias)}<br>` : ''}
-            ${p.matched_manufacturers ? `Manufacturer: ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
-            Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
+      box.innerHTML = searchMatches.map((p, i) => {
+        const detailLine = buildDetailLine(p);
+
+        return `
+          <div class="search-item" data-index="${i}">
+            <div class="search-title">${escapeHtml(getDisplayTitle(p))}</div>
+            <div class="search-desc">${escapeHtml(p.description || '')}</div>
+            ${detailLine ? `<div class="search-meta">${escapeHtml(detailLine)}</div>` : ''}
+            <div class="search-meta">
+              ${p.matched_number ? `Matched: ${escapeHtml(p.matched_number)}<br>` : ''}
+              ${p.matched_note ? `Type: ${escapeHtml(p.matched_note)}<br>` : ''}
+              ${p.matched_alias && !p.matched_number ? `Matched: ${escapeHtml(p.matched_alias)}<br>` : ''}
+              ${p.matched_manufacturers ? `Matched Manufacturer: ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
+              Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       box.style.display = 'block';
 
@@ -362,8 +386,15 @@
         part_id: p.part_id,
         part_number: p.part_number,
         description: p.description,
+        manufacturer: p.manufacturer,
+        model: p.model,
+        aka: p.aka,
+        spec: p.spec,
+        application: p.application,
         matched_alias: p.matched_alias,
         matched_manufacturers: p.matched_manufacturers,
+        matched_number: p.matched_number,
+        matched_note: p.matched_note,
         warehouseQty: p.warehouse_qty,
         myVanQty: p.van_qty,
         parQty: p.par_qty
@@ -382,20 +413,29 @@
 
       clearBtn.style.display = selectedParts.length ? 'inline-block' : 'none';
 
-      list.innerHTML = selectedParts.map((p, i) => `
-        <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
-          <div class="title2">${escapeHtml(getDisplayTitle(p))} — ${escapeHtml(p.description || '')}</div>
+      list.innerHTML = selectedParts.map((p, i) => {
+        const detailLine = buildDetailLine(p);
 
-          ${p.matched_alias ? `<div class="meta">Matched: ${escapeHtml(p.matched_alias)}</div>` : ''}
-          ${p.matched_manufacturers ? `<div class="meta">Manufacturer: ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
+        return `
+          <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
+            <div class="title2">${escapeHtml(getDisplayLabel(p))}</div>
 
-          <div class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</div>
-          <div class="pill">My Van: ${escapeHtml(p.myVanQty)}</div>
-          <div class="pill">Par: ${escapeHtml(p.parQty)}</div>
+            ${detailLine ? `<div class="meta">Notes: ${escapeHtml(detailLine)}</div>` : `<div class="meta">Notes: -</div>`}
+            <div class="meta">MFG: ${escapeHtml(p.manufacturer || p.matched_manufacturers || '-')}</div>
 
-          <button class="remove-btn" type="button" data-index="${i}">Remove Part</button>
-        </div>
-      `).join('');
+            ${p.matched_number ? `<div class="meta">Matched: ${escapeHtml(p.matched_number)}</div>` : ''}
+            ${p.matched_note ? `<div class="meta">Type: ${escapeHtml(p.matched_note)}</div>` : ''}
+            ${p.matched_alias && !p.matched_number ? `<div class="meta">Matched: ${escapeHtml(p.matched_alias)}</div>` : ''}
+            ${p.matched_manufacturers ? `<div class="meta">Matched Manufacturer: ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
+
+            <div class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</div>
+            <div class="pill">Par: ${escapeHtml(p.parQty)}</div>
+            <div class="pill">My Van: ${escapeHtml(p.myVanQty)}</div>
+
+            <button class="remove-btn" type="button" data-index="${i}">Remove</button>
+          </div>
+        `;
+      }).join('');
 
       list.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', () => removeSelected(Number(btn.dataset.index)));
