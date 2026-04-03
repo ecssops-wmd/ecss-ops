@@ -317,11 +317,11 @@
     function buildDetailLine(p){
       const parts = [];
 
-      if (p.manufacturer) parts.push(`Manufacturer ${p.manufacturer}`);
-      if (p.model) parts.push(`Model ${p.model}`);
-      if (p.aka) parts.push(`AKA ${p.aka}`);
-      if (p.spec) parts.push(`Spec ${p.spec}`);
-      if (p.application) parts.push(`Application ${p.application}`);
+      if (p.manufacturer) parts.push(`[Manufacturer] ${p.manufacturer}`);
+      if (p.model) parts.push(`[Model] ${p.model}`);
+      if (p.aka) parts.push(`[AKA] ${p.aka}`);
+      if (p.spec) parts.push(`[Spec] ${p.spec}`);
+      if (p.application) parts.push(`[Application] ${p.application}`);
 
       return parts.join(' | ');
     }
@@ -354,9 +354,9 @@
             ${detailLine ? `<div class="search-meta">${escapeHtml(detailLine)}</div>` : ''}
             <div class="search-meta">
               ${p.matched_number ? `Matched: ${escapeHtml(p.matched_number)}<br>` : ''}
-              ${p.matched_note ? `Type: ${escapeHtml(p.matched_note)}<br>` : ''}
+              ${p.matched_note ? `[Type] ${escapeHtml(p.matched_note)}<br>` : ''}
               ${p.matched_alias && !p.matched_number ? `Matched: ${escapeHtml(p.matched_alias)}<br>` : ''}
-              ${p.matched_manufacturers ? `Matched Manufacturer: ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
+              ${p.matched_manufacturers ? `[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
               Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
             </div>
           </div>
@@ -420,13 +420,11 @@
           <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
             <div class="title2">${escapeHtml(getDisplayLabel(p))}</div>
 
-            ${detailLine ? `<div class="meta">Notes: ${escapeHtml(detailLine)}</div>` : `<div class="meta">Notes: -</div>`}
-            <div class="meta">MFG: ${escapeHtml(p.manufacturer || p.matched_manufacturers || '-')}</div>
-
+            ${detailLine ? `<div class="meta">${escapeHtml(detailLine)}</div>` : ''}
             ${p.matched_number ? `<div class="meta">Matched: ${escapeHtml(p.matched_number)}</div>` : ''}
-            ${p.matched_note ? `<div class="meta">Type: ${escapeHtml(p.matched_note)}</div>` : ''}
+            ${p.matched_note ? `<div class="meta">[Type] ${escapeHtml(p.matched_note)}</div>` : ''}
             ${p.matched_alias && !p.matched_number ? `<div class="meta">Matched: ${escapeHtml(p.matched_alias)}</div>` : ''}
-            ${p.matched_manufacturers ? `<div class="meta">Matched Manufacturer: ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
+            ${p.matched_manufacturers ? `<div class="meta">[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
 
             <div class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</div>
             <div class="pill">Par: ${escapeHtml(p.parQty)}</div>
