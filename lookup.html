@@ -326,6 +326,21 @@
       return parts.join(' | ');
     }
 
+    function buildMatchLine(p){
+      let line = '';
+
+      if (p.matched_number) {
+        line += `Matched: ${escapeHtml(p.matched_number)}`;
+        if (p.matched_note) {
+          line += ` (${escapeHtml(p.matched_note)})`;
+        }
+      } else if (p.matched_alias) {
+        line += `Matched: ${escapeHtml(p.matched_alias)}`;
+      }
+
+      return line;
+    }
+
     function escapeHtml(value) {
       return String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -346,6 +361,7 @@
 
       box.innerHTML = searchMatches.map((p, i) => {
         const detailLine = buildDetailLine(p);
+        const matchLine = buildMatchLine(p);
 
         return `
           <div class="search-item" data-index="${i}">
@@ -353,9 +369,7 @@
             <div class="search-desc">${escapeHtml(p.description || '')}</div>
             ${detailLine ? `<div class="search-meta">${escapeHtml(detailLine)}</div>` : ''}
             <div class="search-meta">
-              ${p.matched_number ? `Matched: ${escapeHtml(p.matched_number)}<br>` : ''}
-              ${p.matched_note ? `[Type] ${escapeHtml(p.matched_note)}<br>` : ''}
-              ${p.matched_alias && !p.matched_number ? `Matched: ${escapeHtml(p.matched_alias)}<br>` : ''}
+              ${matchLine ? `${matchLine}<br>` : ''}
               ${p.matched_manufacturers ? `[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
               Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
             </div>
@@ -415,15 +429,14 @@
 
       list.innerHTML = selectedParts.map((p, i) => {
         const detailLine = buildDetailLine(p);
+        const matchLine = buildMatchLine(p);
 
         return `
           <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
             <div class="title2">${escapeHtml(getDisplayLabel(p))}</div>
 
             ${detailLine ? `<div class="meta">${escapeHtml(detailLine)}</div>` : ''}
-            ${p.matched_number ? `<div class="meta">Matched: ${escapeHtml(p.matched_number)}</div>` : ''}
-            ${p.matched_note ? `<div class="meta">[Type] ${escapeHtml(p.matched_note)}</div>` : ''}
-            ${p.matched_alias && !p.matched_number ? `<div class="meta">Matched: ${escapeHtml(p.matched_alias)}</div>` : ''}
+            ${matchLine ? `<div class="meta">${matchLine}</div>` : ''}
             ${p.matched_manufacturers ? `<div class="meta">[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
 
             <div class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</div>
