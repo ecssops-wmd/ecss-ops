@@ -296,10 +296,12 @@
       return blob.includes('battery');
     }
 
-    function getDisplayTitle(p){
-      const desc = String(p.description || '').toLowerCase();
+    function isBatteryCable(description){
+      return String(description || '').toLowerCase() === 'battery cable';
+    }
 
-      if (desc === 'battery cable' && p.matched_alias) {
+    function getDisplayTitle(p){
+      if (isBatteryCable(p.description) && p.matched_alias) {
         return p.matched_alias;
       }
 
@@ -327,18 +329,19 @@
     }
 
     function buildMatchLine(p){
-      let line = '';
-
       if (p.matched_number) {
-        line += `Matched: ${escapeHtml(p.matched_number)}`;
+        let line = `Matched: ${escapeHtml(p.matched_number)}`;
         if (p.matched_note) {
           line += ` (${escapeHtml(p.matched_note)})`;
         }
-      } else if (p.matched_alias) {
-        line += `Matched: ${escapeHtml(p.matched_alias)}`;
+        return line;
       }
 
-      return line;
+      if (p.matched_alias) {
+        return `Matched: ${escapeHtml(p.matched_alias)}`;
+      }
+
+      return '';
     }
 
     function escapeHtml(value) {
