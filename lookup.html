@@ -18,6 +18,9 @@
       --battery:#fff7cc;
       --remove:#D8342A;
       --search-accent:#9fd6b3;
+      --low-stock-bg:#ffe3e0;
+      --low-stock-text:#a12622;
+      --highlight:#fff1a8;
     }
 
     html,body{
@@ -215,6 +218,11 @@
       margin-right:6px;
     }
 
+    .pill.low-stock{
+      background:var(--low-stock-bg);
+      color:var(--low-stock-text);
+    }
+
     .remove-btn{
       margin-top:12px;
       width:100%;
@@ -233,6 +241,13 @@
       text-align:center;
       margin-top:10px;
       line-height:1.35;
+    }
+
+    mark{
+      background:var(--highlight);
+      color:inherit;
+      padding:0 2px;
+      border-radius:3px;
     }
   </style>
 </head>
@@ -311,6 +326,10 @@
       return String(description || '').toLowerCase() === 'battery cable';
     }
 
+    function isSpecialLayoutPart(p){
+      return isBattery(p.part_number, p.description) || isBatteryCable(p.description);
+    }
+
     function getDisplayTitle(p){
       if (isBatteryCable(p.description) && p.matched_alias) {
         return p.matched_alias;
@@ -330,23 +349,29 @@
       const line1 = [];
       const line2 = [];
       const line3 = [];
+      const line4 = [];
+      const line5 = [];
 
       if (p.manufacturer) line1.push(`[Manufacturer] ${p.manufacturer}`);
       if (p.model) line1.push(`[Model] ${p.model}`);
 
-      if (p.spec) line2.push(`[Spec] ${p.spec}`);
-      if (p.application) line2.push(`[Application] ${p.application}`);
       if (p.aka) line2.push(`[AKA] ${p.aka}`);
-      if (p.includes) line2.push(`[Included] ${p.includes}`);
-      if (p.excludes) line2.push(`[Excluded] ${p.excludes}`);
+      if (p.spec) line2.push(`[Spec] ${p.spec}`);
 
-      if (p.notes) line3.push(`[Notes] ${p.notes}`);
-      if (p.category) line3.push(`[Category] ${p.category}`);
+      if (p.application) line3.push(`[Application] ${p.application}`);
+      if (p.includes) line3.push(`[Includes] ${p.includes}`);
+      if (p.excludes) line3.push(`[Excludes] ${p.excludes}`);
+
+      if (p.notes) line4.push(`[Notes] ${p.notes}`);
+
+      if (p.category) line5.push(`[Category] ${p.category}`);
 
       return {
         line1: line1.join(' | '),
         line2: line2.join(' | '),
-        line3: line3.join(' | ')
+        line3: line3.join(' | '),
+        line4: line4.join(' | '),
+        line5: line5.join(' | ')
       };
     }
 
@@ -366,6 +391,17 @@
       return '';
     }
 
+    function buildLowStockBadge(p){
+      const vanQty = Number(p.van_qty ?? p.myVanQty ?? 0);
+      const parQty = Number(p.par_qty ?? p.parQty ?? 0);
+
+      if (parQty > 0 && vanQty < parQty) {
+        return `<span class="pill low-stock">LOW STOCK</span>`;
+      }
+
+      return '';
+    }
+
     function escapeHtml(value) {
       return String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -375,8 +411,111 @@
         .replaceAll("'", '&#39;');
     }
 
+    function escapeRegExp(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function getSearchTokens(query){
+      return String(query || '')
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    function highlightText(value, query){
+      let output = escapeHtml(value ?? '');
+      const tokens = [...new Set(getSearchTokens(query))];
+
+      for (const token of tokens) {
+        const regex = new RegExp(`(${escapeRegExp(token)})`, 'ig');
+        output = output.replace(regex, '<mark>$1</mark>');
+      }
+
+      return output;
+    }
+
+    function renderLinesForSearch(p, term){
+      const details = buildDetailLines(p);
+      const matchLine = buildMatchLine(p);
+      const specialLayout = isSpecialLayoutPart(p);
+
+      const line1 = details.line1 ? `<div class="search-meta">${highlightText(details.line1, term)}</div>` : '';
+      const line2 = details.line2 ? `<div class="search-meta">${highlightText(details.line2, term)}</div>` : '';
+      const line3 = details.line3 ? `<div class="search-meta">${highlightText(details.line3, term)}</div>` : '';
+      const line4 = details.line4 ? `<div class="search-meta">${highlightText(details.line4, term)}</div>` : '';
+      const line5 = details.line5 ? `<div class="search-meta">${highlightText(details.line5, term)}</div>` : '';
+      const matched = matchLine ? `<div class="search-meta">${matchLine}</div>` : '';
+      const matchedMfg = p.matched_manufacturers ? `<div class="search-meta">[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}</div>` : '';
+
+      if (specialLayout) {
+        return `
+          ${line1}
+          ${matched}
+          ${matchedMfg}
+          ${line2}
+          ${line3}
+          ${line4}
+          ${line5}
+        `;
+      }
+
+      return `
+        ${line1}
+        ${line2}
+        ${line3}
+        ${line4}
+        ${line5}
+        ${matched}
+        ${matchedMfg}
+      `;
+    }
+
+    function renderLinesForCard(p){
+      const details = buildDetailLines(p);
+      const matchLine = buildMatchLine(p);
+      const specialLayout = isSpecialLayoutPart(p);
+
+      const line1 = details.line1 ? `<div class="meta-line">${escapeHtml(details.line1)}</div>` : '';
+      const line2 = details.line2 ? `<div class="meta-line">${escapeHtml(details.line2)}</div>` : '';
+      const line3 = details.line3 ? `<div class="meta-line">${escapeHtml(details.line3)}</div>` : '';
+      const line4 = details.line4 ? `<div class="meta-line">${escapeHtml(details.line4)}</div>` : '';
+      const line5 = details.line5 ? `<div class="meta-line">${escapeHtml(details.line5)}</div>` : '';
+      const matched = matchLine ? `<div class="meta">${matchLine}</div>` : '';
+      const matchedMfg = p.matched_manufacturers ? `<div class="meta">[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}</div>` : '';
+
+      if (specialLayout) {
+        return `
+          <div class="meta-block">
+            ${line1}
+          </div>
+          ${matched}
+          ${matchedMfg}
+          <div class="meta-block">
+            ${line2}
+            ${line3}
+            ${line4}
+            ${line5}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="meta-block">
+          ${line1}
+          ${line2}
+          ${line3}
+          ${line4}
+          ${line5}
+        </div>
+        ${matched}
+        ${matchedMfg}
+      `;
+    }
+
     function renderSearchResults(){
       const box = document.getElementById('searchResults');
+      const term = document.getElementById('searchBox').value.trim();
 
       if (!searchMatches.length) {
         box.style.display = 'none';
@@ -385,31 +524,20 @@
       }
 
       box.innerHTML = searchMatches.map((p, i) => {
-        const details = buildDetailLines(p);
-        const matchLine = buildMatchLine(p);
+        const lowStockBadge = buildLowStockBadge(p);
 
         return `
           <div class="search-item" data-index="${i}">
-            <div class="search-title">${escapeHtml(getDisplayTitle(p))}</div>
-            <div class="search-desc">${escapeHtml(p.description || '')}</div>
+            <div class="search-title">${highlightText(getDisplayTitle(p), term)}</div>
+            <div class="search-desc">${highlightText(p.description || '', term)}</div>
 
-            ${
-              details.line1 || details.line2 || details.line3
-                ? `
-                  <div class="search-meta">
-                    ${details.line1 ? `${escapeHtml(details.line1)}<br>` : ''}
-                    ${details.line2 ? `${escapeHtml(details.line2)}<br>` : ''}
-                    ${details.line3 ? `${escapeHtml(details.line3)}<br>` : ''}
-                  </div>
-                `
-                : ''
-            }
+            ${renderLinesForSearch(p, term)}
 
             <div class="search-meta">
-              ${matchLine ? `${matchLine}<br>` : ''}
-              ${p.matched_manufacturers ? `[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
               Warehouse: ${escapeHtml(p.warehouse_qty)} | My Van: ${escapeHtml(p.van_qty)} | Par: ${escapeHtml(p.par_qty)}
             </div>
+
+            ${lowStockBadge ? `<div>${lowStockBadge}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -439,9 +567,9 @@
         description: p.description,
         manufacturer: p.manufacturer,
         model: p.model,
+        aka: p.aka,
         spec: p.spec,
         application: p.application,
-        aka: p.aka,
         includes: p.includes,
         excludes: p.excludes,
         notes: p.notes,
@@ -469,31 +597,18 @@
       clearBtn.style.display = selectedParts.length ? 'inline-block' : 'none';
 
       list.innerHTML = selectedParts.map((p, i) => {
-        const details = buildDetailLines(p);
-        const matchLine = buildMatchLine(p);
+        const lowStockBadge = buildLowStockBadge(p);
 
         return `
           <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
             <div class="title2">${escapeHtml(getDisplayLabel(p))}</div>
 
-            ${
-              details.line1 || details.line2 || details.line3
-                ? `
-                  <div class="meta-block">
-                    ${details.line1 ? `<div class="meta-line">${escapeHtml(details.line1)}</div>` : ''}
-                    ${details.line2 ? `<div class="meta-line">${escapeHtml(details.line2)}</div>` : ''}
-                    ${details.line3 ? `<div class="meta-line">${escapeHtml(details.line3)}</div>` : ''}
-                  </div>
-                `
-                : ''
-            }
-
-            ${matchLine ? `<div class="meta">${matchLine}</div>` : ''}
-            ${p.matched_manufacturers ? `<div class="meta">[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
+            ${renderLinesForCard(p)}
 
             <div class="pill">Warehouse: ${escapeHtml(p.warehouseQty)}</div>
             <div class="pill">Par: ${escapeHtml(p.parQty)}</div>
             <div class="pill">My Van: ${escapeHtml(p.myVanQty)}</div>
+            ${lowStockBadge}
 
             <button class="remove-btn" type="button" data-index="${i}">Remove</button>
           </div>
@@ -550,7 +665,7 @@
           console.error(error);
           setStatus(`Search failed: ${error.message}`);
         }
-      }, 200);
+      }, 120);
     }
 
     function init(){
