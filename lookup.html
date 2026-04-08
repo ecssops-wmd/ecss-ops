@@ -193,6 +193,17 @@
       line-height:1.45;
     }
 
+    .meta-block{
+      margin-top:4px;
+    }
+
+    .meta-line{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+      margin-top:2px;
+    }
+
     .pill{
       display:inline-block;
       padding:5px 10px;
@@ -262,7 +273,7 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const SUPABASE_URL = 'https://ddpswufhwzljjoqsxazh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcHN3dWZod3psampvcXN4YXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzcwMTQsImV4cCI6MjA4OTg1MzAxNH0.I8nzAlkmCNgVQmtDFPFVoUxlmrxFneQQLk8gHh3v2II';
+    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -304,7 +315,6 @@
       if (isBatteryCable(p.description) && p.matched_alias) {
         return p.matched_alias;
       }
-
       return p.part_number || '';
     }
 
@@ -316,16 +326,28 @@
       return `${title} — ${p.description || ''}`;
     }
 
-    function buildDetailLine(p){
-      const parts = [];
+    function buildDetailLines(p){
+      const line1 = [];
+      const line2 = [];
+      const line3 = [];
 
-      if (p.manufacturer) parts.push(`[Manufacturer] ${p.manufacturer}`);
-      if (p.model) parts.push(`[Model] ${p.model}`);
-      if (p.aka) parts.push(`[AKA] ${p.aka}`);
-      if (p.spec) parts.push(`[Spec] ${p.spec}`);
-      if (p.application) parts.push(`[Application] ${p.application}`);
+      if (p.manufacturer) line1.push(`[Manufacturer] ${p.manufacturer}`);
+      if (p.model) line1.push(`[Model] ${p.model}`);
 
-      return parts.join(' | ');
+      if (p.spec) line2.push(`[Spec] ${p.spec}`);
+      if (p.application) line2.push(`[Application] ${p.application}`);
+      if (p.aka) line2.push(`[AKA] ${p.aka}`);
+      if (p.included) line2.push(`[Included] ${p.included}`);
+      if (p.excluded) line2.push(`[Excluded] ${p.excluded}`);
+
+      if (p.notes) line3.push(`[Notes] ${p.notes}`);
+      if (p.category) line3.push(`[Category] ${p.category}`);
+
+      return {
+        line1: line1.join(' | '),
+        line2: line2.join(' | '),
+        line3: line3.join(' | ')
+      };
     }
 
     function buildMatchLine(p){
@@ -363,14 +385,26 @@
       }
 
       box.innerHTML = searchMatches.map((p, i) => {
-        const detailLine = buildDetailLine(p);
+        const details = buildDetailLines(p);
         const matchLine = buildMatchLine(p);
 
         return `
           <div class="search-item" data-index="${i}">
             <div class="search-title">${escapeHtml(getDisplayTitle(p))}</div>
             <div class="search-desc">${escapeHtml(p.description || '')}</div>
-            ${detailLine ? `<div class="search-meta">${escapeHtml(detailLine)}</div>` : ''}
+
+            ${
+              details.line1 || details.line2 || details.line3
+                ? `
+                  <div class="search-meta">
+                    ${details.line1 ? `${escapeHtml(details.line1)}<br>` : ''}
+                    ${details.line2 ? `${escapeHtml(details.line2)}<br>` : ''}
+                    ${details.line3 ? `${escapeHtml(details.line3)}<br>` : ''}
+                  </div>
+                `
+                : ''
+            }
+
             <div class="search-meta">
               ${matchLine ? `${matchLine}<br>` : ''}
               ${p.matched_manufacturers ? `[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}<br>` : ''}
@@ -405,9 +439,13 @@
         description: p.description,
         manufacturer: p.manufacturer,
         model: p.model,
-        aka: p.aka,
         spec: p.spec,
         application: p.application,
+        aka: p.aka,
+        included: p.included,
+        excluded: p.excluded,
+        notes: p.notes,
+        category: p.category,
         matched_alias: p.matched_alias,
         matched_manufacturers: p.matched_manufacturers,
         matched_number: p.matched_number,
@@ -431,14 +469,25 @@
       clearBtn.style.display = selectedParts.length ? 'inline-block' : 'none';
 
       list.innerHTML = selectedParts.map((p, i) => {
-        const detailLine = buildDetailLine(p);
+        const details = buildDetailLines(p);
         const matchLine = buildMatchLine(p);
 
         return `
           <div class="card ${isBattery(p.part_number, p.description) ? 'battery' : ''}">
             <div class="title2">${escapeHtml(getDisplayLabel(p))}</div>
 
-            ${detailLine ? `<div class="meta">${escapeHtml(detailLine)}</div>` : ''}
+            ${
+              details.line1 || details.line2 || details.line3
+                ? `
+                  <div class="meta-block">
+                    ${details.line1 ? `<div class="meta-line">${escapeHtml(details.line1)}</div>` : ''}
+                    ${details.line2 ? `<div class="meta-line">${escapeHtml(details.line2)}</div>` : ''}
+                    ${details.line3 ? `<div class="meta-line">${escapeHtml(details.line3)}</div>` : ''}
+                  </div>
+                `
+                : ''
+            }
+
             ${matchLine ? `<div class="meta">${matchLine}</div>` : ''}
             ${p.matched_manufacturers ? `<div class="meta">[Matched Manufacturer] ${escapeHtml(p.matched_manufacturers)}</div>` : ''}
 
