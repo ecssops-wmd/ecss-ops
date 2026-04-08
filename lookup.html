@@ -337,8 +337,8 @@
       if (p.spec) line2.push(`[Spec] ${p.spec}`);
       if (p.application) line2.push(`[Application] ${p.application}`);
       if (p.aka) line2.push(`[AKA] ${p.aka}`);
-      if (p.included) line2.push(`[Included] ${p.included}`);
-      if (p.excluded) line2.push(`[Excluded] ${p.excluded}`);
+      if (p.includes) line2.push(`[Included] ${p.includes}`);
+      if (p.excludes) line2.push(`[Excluded] ${p.excludes}`);
 
       if (p.notes) line3.push(`[Notes] ${p.notes}`);
       if (p.category) line3.push(`[Category] ${p.category}`);
@@ -442,8 +442,8 @@
         spec: p.spec,
         application: p.application,
         aka: p.aka,
-        included: p.included,
-        excluded: p.excluded,
+        includes: p.includes,
+        excludes: p.excludes,
         notes: p.notes,
         category: p.category,
         matched_alias: p.matched_alias,
