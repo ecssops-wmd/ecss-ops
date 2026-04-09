@@ -376,16 +376,29 @@
     }
 
     function buildMatchLine(p){
-      if (p.matched_number) {
-        let line = `Matched: ${escapeHtml(p.matched_number)}`;
+      const searched = String(document.getElementById('searchBox')?.value || '').trim().toLowerCase();
+      const displayTitle = String(getDisplayTitle(p) || '').trim().toLowerCase();
+      const mainPartNumber = String(p.part_number || '').trim().toLowerCase();
+      const matchedNumber = String(p.matched_number || '').trim();
+      const matchedAlias = String(p.matched_alias || '').trim();
+      const specialPart = isBattery(p.part_number, p.description) || isBatteryCable(p.description);
+
+      if (!searched) return '';
+
+      if (searched === displayTitle) return '';
+
+      if (!specialPart && searched === mainPartNumber) return '';
+
+      if (matchedNumber && matchedNumber.toLowerCase() !== displayTitle) {
+        let line = `Matched: ${escapeHtml(matchedNumber)}`;
         if (p.matched_note) {
           line += ` (${escapeHtml(p.matched_note)})`;
         }
         return line;
       }
 
-      if (p.matched_alias) {
-        return `Matched: ${escapeHtml(p.matched_alias)}`;
+      if (matchedAlias && matchedAlias.toLowerCase() !== displayTitle) {
+        return `Matched: ${escapeHtml(matchedAlias)}`;
       }
 
       return '';
